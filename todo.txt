@@ -1,34 +1,6 @@
-General functions I will need:
+Bugs:
+1. Fix model transformation methods
+    -are currently relative to the current transformation
 
-each object in the scene must be:
-loaded
-configured
-updated
-rendered
-
-
-first we have an init method:
-
-init(){
-    load object data into memory
-    configure basic settings
-    load buffers
-
-    //calls render at the end
-    render();
-}
-
-will have one render method that is the animation loop:
-
-render(){
-    for each object in scene:
-        render object;
-
-
-    requestAnimationFrame(render);
-}
-
-object render method - implemented per object
-    configure flags for the vertex/frag shaders
-    set active
-    render
+TODO low priority:
+- refactor how we get the data - dont want to clear constants every time

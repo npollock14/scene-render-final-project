@@ -56,9 +56,11 @@ function render() {
   context.car.draw(context.gl, context.aLoc, context.uLoc);
 
   //draw bunny
-  //   context.bunny.rotateY(0.5);
-  //   context.bunny.rotateX(0.25);
-  //   context.bunny.draw(context.gl, context.aLoc, context.uLoc);
+  //   console.log(context.bunny.vertices[context.bunny.vertices.length - 1]);
+  context.bunny.rotateY(0.1);
+  context.bunny.rotateX(0.25);
+  context.bunny.move(0, 0.001, 0);
+  context.bunny.draw(context.gl, context.aLoc, context.uLoc);
   requestAnimationFrame(render);
 }
 
@@ -74,15 +76,14 @@ async function loadData() {
     "MTL"
   );
   let car = new Object3D(faceVertices, normals);
+  car.initBuffers(context.gl);
+  car.setBuffers(context.gl);
+  car.scale(0.3, 0.3, 0.3);
   context.car = car;
-  context.car.initBuffers(context.gl);
-  context.car.setBuffers(context.gl);
-  context.car.scale(0.1, 0.1, 0.1);
+
   console.log("car loaded");
 
-  faceVertices = [];
-  verticies = [];
-  normals = [];
+  resetConstants();
 
   //load the bunny
   await loadFile(
@@ -94,14 +95,34 @@ async function loadData() {
     "MTL"
   );
   let bunny = new Object3D(faceVertices, normals);
+  bunny.initBuffers(context.gl);
+  bunny.setBuffers(context.gl);
   context.bunny = bunny;
-  context.bunny.initBuffers(context.gl);
-  context.bunny.setBuffers(context.gl);
-  //   context.bunny.scale(0.1, 0.1, 0.1);
-  //translate bunny to the right
-  //   context.bunny.move(0.5, 0, 0);
+  context.bunny.move(0.5, 0.5, 0);
+  context.bunny.scale(0.5, 0.5, 0.5);
   console.log("bunny loaded");
 
   console.log("done loading");
   render(context);
+}
+
+//TODO REMOVE - this code sucks
+function resetConstants() {
+  vertices = []; // List of vertex definitions from OBJ
+  normals = []; // List of normal definitions from OBJ
+  uvs = []; // List of UV definitions from OBJ
+  faceVertices = []; // Non-indexed final vertex definitions
+  faceNormals = []; // Non-indexed final normal definitions
+  faceUVs = []; // Non-indexed final UV definitions
+
+  faceVerts = []; // Indices into vertices array for this face
+  faceNorms = []; // Indices into normal array for this face
+  faceTexs = []; // Indices into UVs array for this face
+
+  currMaterial = null; // Current material in use
+  textureURL = null; // URL of texture file to use
+
+  // Mapping of material name to diffuse / specular colors
+  diffuseMap = new Map();
+  specularMap = new Map();
 }

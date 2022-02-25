@@ -67,10 +67,10 @@ class Object3D {
     gl.bufferData(gl.ARRAY_BUFFER, flatten(this.normals), gl.STATIC_DRAW);
   }
   draw(gl, aLocs, uLocs) {
+    gl.uniformMatrix4fv(uLocs.m, false, flatten(this.modelMatrix));
     gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.v);
     gl.vertexAttribPointer(aLocs.v, 4, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(aLocs.v);
-    gl.uniformMatrix4fv(uLocs.m, false, flatten(this.modelMatrix));
     gl.drawArrays(gl.TRIANGLES, 0, this.vertices.length);
   }
 }
