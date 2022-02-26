@@ -1,12 +1,6 @@
-let context;
+const context = new ProgramContext();
 
 function main() {
-  //create and initialize the program context
-  context = new ProgramContext();
-  init();
-}
-
-function init() {
   // Retrieve <canvas> element
   context.canvas = document.getElementById("webgl");
 
@@ -23,27 +17,57 @@ function init() {
   context.gl.viewport(0, 0, context.canvas.width, context.canvas.height);
 
   // Set clear color
-  context.gl.clearColor(1.0, 1.0, 1.0, 1.0);
+  context.gl.clearColor(0.0, 0.0, 0.0, 1.0);
 
   // Initialize shaders
   context.program = initShaders(context.gl, "vshader", "fshader");
   context.gl.useProgram(context.program);
 
+  //stores the locations of the vertex and normal attributes
+  context.setAttributeLocations();
+  context.setUniformLocations();
   context.projectionMatrix = perspective(
-    60,
+    90,
     context.canvas.width / context.canvas.height,
     0.1,
     100
   );
-  console.log(context.gl);
 
-  //stores the locations of the vertex and normal attributes
-  context.setAttributeLocations();
-  context.setUniformLocations();
-  console.log(context.aLoc);
-  console.log(context.uLoc);
+  context.linkProjectionMatrix();
+  context.linkCameraMatrix();
+
+  //enable depth testing and back-face culling
+  context.gl.enable(context.gl.DEPTH_TEST);
+  context.gl.enable(context.gl.CULL_FACE);
+  context.gl.cullFace(context.gl.BACK);
+
+  //link event handlers
+  document.onkeydown = (e) => {
+    handleKeyDown(e);
+  };
+  //TODO implement mouse moving to change where the camera looks
+  // document.onmousemove = (e) => {
+  //   handleMouseMove(e);
+  // };
+  // document.onmousedown = (e) => {
+  //   //if lmb is pressed, set mouseDown to true
+  //   if (e.button === 0) {
+  //     mouseDown = true;
+  //   }
+  // };
+  // document.onmouseup = (e) => {
+  //   //if lmb is released, set mouseDown to false
+  //   if (e.button === 0) {
+  //     mouseDown = false;
+  //   }
+  // };
+  // //if mouse leaves the canvas, mouseDown is set to false
+  // context.canvas.onmouseleave = () => {
+  //   mouseDown = false;
+  // };
 
   //can now begin to load data asynchronously
+
   loadData(context);
 }
 
@@ -51,15 +75,11 @@ function render() {
   context.clear();
 
   //draw car
-  context.car.rotateY(0.5);
-  context.car.rotateX(0.25);
   context.car.draw(context.gl, context.aLoc, context.uLoc);
 
   //draw bunny
   //   console.log(context.bunny.vertices[context.bunny.vertices.length - 1]);
-  context.bunny.rotateY(0.1);
-  context.bunny.rotateX(0.25);
-  context.bunny.move(0, 0.001, 0);
+
   context.bunny.draw(context.gl, context.aLoc, context.uLoc);
   requestAnimationFrame(render);
 }
@@ -78,7 +98,8 @@ async function loadData() {
   let car = new Object3D(faceVertices, normals);
   car.initBuffers(context.gl);
   car.setBuffers(context.gl);
-  car.scale(0.3, 0.3, 0.3);
+  car.move(0, -1, -5);
+  car.rotateY(45);
   context.car = car;
 
   console.log("car loaded");
@@ -98,8 +119,7 @@ async function loadData() {
   bunny.initBuffers(context.gl);
   bunny.setBuffers(context.gl);
   context.bunny = bunny;
-  context.bunny.move(0.5, 0.5, 0);
-  context.bunny.scale(0.5, 0.5, 0.5);
+  context.bunny.move(5, 0.5, -5);
   console.log("bunny loaded");
 
   console.log("done loading");

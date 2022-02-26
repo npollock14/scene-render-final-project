@@ -1,7 +1,7 @@
 class Camera {
   constructor(x = 0, y = 0, z = 0) {
     this.eye = [x, y, z];
-    this.at = [0, 0, -1];
+    this.at = [0, 0, -100];
     this.up = [0, 1, 0];
     this.matrix = lookAt(this.eye, this.at, this.up);
     this.log();
@@ -35,26 +35,54 @@ class Object3D {
     this.vertices = vertices;
     this.normals = normals;
     this.modelMatrix = mat4();
+
+    this.scaleMatrix = mat4();
+    this.translateMatrix = mat4();
+    this.rotateMatrix = mat4();
     this.buffers = {
       v: null,
       n: null,
     };
   }
+  setModelMatrix() {
+    this.modelMatrix = mult(
+      this.translateMatrix,
+      mult(this.rotateMatrix, this.scaleMatrix)
+    );
+  }
   scale(x, y, z) {
-    this.modelMatrix = mult(this.modelMatrix, scalem(x, y, z));
+    this.scaleMatrix = mult(this.scaleMatrix, scalem(x, y, z));
+    this.setModelMatrix();
+  }
+  setScale(x, y, z) {
+    this.scaleMatrix = scalem(x, y, z);
+    this.setModelMatrix();
   }
   move(x, y, z) {
-    this.modelMatrix = mult(this.modelMatrix, translate(x, y, z));
+    this.translateMatrix = mult(this.translateMatrix, translate(x, y, z));
+    this.setModelMatrix();
+  }
+  setPosition(x, y, z) {
+    this.translateMatrix = translate(x, y, z);
+    this.setModelMatrix();
   }
   rotateX(angle) {
-    this.modelMatrix = mult(this.modelMatrix, rotateX(angle));
+    this.rotateMatrix = mult(this.rotateMatrix, rotateX(angle));
+    this.setModelMatrix();
   }
   rotateY(angle) {
-    this.modelMatrix = mult(this.modelMatrix, rotateY(angle));
+    this.rotateMatrix = mult(this.rotateMatrix, rotateY(angle));
+    this.setModelMatrix();
   }
   rotateZ(angle) {
-    this.modelMatrix = mult(this.modelMatrix, rotateZ(angle));
+    this.rotateMatrix = mult(this.rotateMatrix, rotateZ(angle));
+    this.setModelMatrix();
   }
+  resetRotation() {
+    this.rotateMatrix = mat4();
+    this.setModelMatrix();
+  }
+
   initBuffers(gl) {
     this.buffers.v = gl.createBuffer();
     this.buffers.n = gl.createBuffer();
@@ -67,11 +95,12 @@ class Object3D {
     gl.bufferData(gl.ARRAY_BUFFER, flatten(this.normals), gl.STATIC_DRAW);
   }
   draw(gl, aLocs, uLocs) {
-    gl.uniformMatrix4fv(uLocs.m, false, flatten(this.modelMatrix));
+    gl.uniformMatrix4fv(uLocs.mm, false, flatten(this.modelMatrix));
     gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.v);
     gl.vertexAttribPointer(aLocs.v, 4, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(aLocs.v);
     gl.drawArrays(gl.TRIANGLES, 0, this.vertices.length);
+    // gl.drawArrays(gl.LINE_STRIP, 0, this.vertices.length);
   }
 }
 
@@ -89,7 +118,9 @@ class ProgramContext {
       n: null,
     };
     this.uLoc = {
-      m: null,
+      mm: null,
+      pm: null,
+      cm: null,
     };
   }
   clear() {
@@ -102,7 +133,18 @@ class ProgramContext {
     this.aLoc.n = gl.getAttribLocation(this.program, "vNormal");
   }
   setUniformLocations() {
-    let gl = this.gl;
-    this.uLoc.m = gl.getUniformLocation(this.program, "modelMatrix");
+    this.uLoc.mm = this.gl.getUniformLocation(this.program, "modelMatrix");
+    this.uLoc.pm = this.gl.getUniformLocation(this.program, "projectionMatrix");
+    this.uLoc.cm = this.gl.getUniformLocation(this.program, "cameraMatrix");
+  }
+  linkProjectionMatrix() {
+    this.gl.uniformMatrix4fv(
+      this.uLoc.pm,
+      false,
+      flatten(this.projectionMatrix)
+    );
+  }
+  linkCameraMatrix() {
+    this.gl.uniformMatrix4fv(this.uLoc.cm, false, flatten(this.cam.matrix));
   }
 }

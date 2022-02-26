@@ -10,13 +10,16 @@
             attribute vec4 vNormal;
 
             uniform mat4 modelMatrix;
+            uniform mat4 projectionMatrix;
+            uniform mat4 cameraMatrix;
 
             void main() {
-                gl_Position = modelMatrix * vPosition;
+                gl_Position = projectionMatrix * cameraMatrix * modelMatrix * vPosition;
             }
         </script>
 
         <script id="fshader" type="x-shader/x-fragment">
+            precision mediump float;
             void main() {
                 gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
             }
@@ -26,9 +29,11 @@
         <script type="text/javascript" src="lib/initShaders.js"></script>
         <script type="text/javascript" src="lib/MV.js"></script>
 
+
         <script type="text/javascript" src="classes.js"></script>
         <script type="text/javascript" src="main.js"></script>
         <script type="text/javascript" src="parser.js"></script>
+        <script type="text/javascript" src="eventHandlers.js"></script>
 
     </head>
 

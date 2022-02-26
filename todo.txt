@@ -1,6 +1,8 @@
-Bugs:
-1. Fix model transformation methods
-    -are currently relative to the current transformation
+TODO
+Camera movement and perspective projection
+
 
 TODO low priority:
 - refactor how we get the data - dont want to clear constants every time
+
+Bugs:
