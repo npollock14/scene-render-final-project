@@ -27,7 +27,7 @@ function main() {
   context.setAttributeLocations();
   context.setUniformLocations();
   context.projectionMatrix = perspective(
-    90,
+    45,
     context.canvas.width / context.canvas.height,
     0.1,
     100
@@ -88,14 +88,16 @@ async function loadData() {
   console.log("loading data");
   //   load the car
   await loadFile(
-    "https://web.cs.wpi.edu/~jmcuneo/cs4731/project3_1/car.obj",
-    "OBJ"
-  );
-  await loadFile(
     "https://web.cs.wpi.edu/~jmcuneo/cs4731/project3_1/car.mtl",
     "MTL"
   );
-  let car = new Object3D(faceVertices, normals);
+  await loadFile(
+    "https://web.cs.wpi.edu/~jmcuneo/cs4731/project3_1/car.obj",
+    "OBJ"
+  );
+
+  let car = new Object3D(faceVertices, normals, diffuse, specular);
+  console.log(car.diffuse);
   car.initBuffers(context.gl);
   car.setBuffers(context.gl);
   car.move(0, -1, -5);
@@ -108,13 +110,14 @@ async function loadData() {
 
   //load the bunny
   await loadFile(
-    "https://web.cs.wpi.edu/~jmcuneo/cs4731/project3_1/bunny.obj",
-    "OBJ"
-  );
-  await loadFile(
     "https://web.cs.wpi.edu/~jmcuneo/cs4731/project3_1/bunny.mtl",
     "MTL"
   );
+  await loadFile(
+    "https://web.cs.wpi.edu/~jmcuneo/cs4731/project3_1/bunny.obj",
+    "OBJ"
+  );
+
   let bunny = new Object3D(faceVertices, normals);
   bunny.initBuffers(context.gl);
   bunny.setBuffers(context.gl);
@@ -134,6 +137,9 @@ function resetConstants() {
   faceVertices = []; // Non-indexed final vertex definitions
   faceNormals = []; // Non-indexed final normal definitions
   faceUVs = []; // Non-indexed final UV definitions
+
+  diffuse = []; // List of diffuse colors per vertex
+  specular = []; // List of specular colors per vertex
 
   faceVerts = []; // Indices into vertices array for this face
   faceNorms = []; // Indices into normal array for this face

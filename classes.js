@@ -31,7 +31,7 @@ class Camera {
 }
 
 class Object3D {
-  constructor(vertices, normals) {
+  constructor(vertices, normals, diffuse, specular) {
     this.vertices = vertices;
     this.normals = normals;
     this.modelMatrix = mat4();
@@ -43,6 +43,9 @@ class Object3D {
       v: null,
       n: null,
     };
+
+    this.diffuse = diffuse;
+    this.specular = specular;
   }
   setModelMatrix() {
     this.modelMatrix = mult(

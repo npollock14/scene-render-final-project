@@ -5,6 +5,9 @@ let faceVertices = []; // Non-indexed final vertex definitions
 let faceNormals = []; // Non-indexed final normal definitions
 let faceUVs = []; // Non-indexed final UV definitions
 
+let diffuse = [];
+let specular = [];
+
 let faceVerts = []; // Indices into vertices array for this face
 let faceNorms = []; // Indices into normal array for this face
 let faceTexs = []; // Indices into UVs array for this face
@@ -77,7 +80,10 @@ function parseObjFile(objFile) {
     }
 
     // Triangulate convex polygon using fan triangulation
+    let mat = getMat(currMaterial);
     for (let i = 1; i < faceVerts.length - 1; i++) {
+      diffuse.push(mat["diffuse"], mat["diffuse"], mat["diffuse"]);
+      specular.push(mat["specular"], mat["specular"], mat["specular"]);
       faceVertices.push(faceVerts[0], faceVerts[i], faceVerts[i + 1]);
       faceNormals.push(faceNorms[0], faceNorms[i], faceNorms[i + 1]);
       faceUVs.push(faceTexs[0], faceTexs[i], faceTexs[i + 1]);
@@ -99,6 +105,7 @@ function parseObjFile(objFile) {
 function parseFaces(line) {
   // Extract the v/vt/vn statements into an array
   let indices = line.match(/[0-9\/]+/g);
+  // push currMaterial into faceMats array n times where n = indices.length
 
   // We have to account for how vt/vn can be omitted
   let types = indices[0].match(/[\/]/g).length;
@@ -195,4 +202,25 @@ function parseMtlFile(mtlFile) {
         line.substr(line.indexOf(" ") + 1);
     }
   }
+}
+
+//takes the matName and returns the diffuse color and specular colors in an array
+//uses the global diffuseMap and specularMap
+//if the mapping does not exist, warn the user and return the default values of (.5,.5,.5,1)
+function getMat(matName) {
+  let mat = {};
+  mat["diffuse"] = [0.5, 0.5, 0.5, 1];
+  mat["specular"] = [0.5, 0.5, 0.5, 1];
+  if (diffuseMap.has(matName)) {
+    mat["diffuse"] = diffuseMap.get(matName);
+  } else {
+    console.warn("Warning: " + matName + " has no diffuse color");
+  }
+  if (specularMap.has(matName)) {
+    mat["specular"] = specularMap.get(matName);
+  } else {
+    console.warn("Warning: " + matName + " has no specular color");
+  }
+
+  return mat;
 }
