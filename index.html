@@ -9,19 +9,30 @@
             attribute vec4 vPosition;
             attribute vec4 vNormal;
 
+            attribute vec4 diffuseColor;
+            attribute vec4 specularColor;
+            varying vec4 vDiffuseColor;
+            varying vec4 vSpecularColor;
+
+            uniform mat4 lightPosition; //in world coordinates
+
             uniform mat4 modelMatrix;
             uniform mat4 projectionMatrix;
             uniform mat4 cameraMatrix;
+            
 
             void main() {
+                vDiffuseColor = diffuseColor + (specularColor*vec4(0,0,0,0));
                 gl_Position = projectionMatrix * cameraMatrix * modelMatrix * vPosition;
             }
         </script>
 
         <script id="fshader" type="x-shader/x-fragment">
             precision mediump float;
+
+            varying vec4 vDiffuseColor;
             void main() {
-                gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+                gl_FragColor = vDiffuseColor;
             }
         </script>
 

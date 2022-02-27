@@ -1,12 +1,17 @@
 const keyMap = {
   w: foward,
   s: backwards,
+  " ": up,
+  Control: down,
+  a: left,
+  d: right,
 };
 
 let mouseDown = false;
 
 function handleKeyDown(e) {
   //if the key is mapped to a function, call it
+  console.log(e.key);
   if (keyMap[e.key]) {
     keyMap[e.key]();
   }
@@ -38,6 +43,26 @@ function foward() {
 //translate the camera backward
 function backwards() {
   context.cam.addVector(0, 0, 0.1);
+  context.linkCameraMatrix();
+  console.log(context.cam.eye);
+}
+function up() {
+  context.cam.addVector(0, 0.1, 0);
+  context.linkCameraMatrix();
+  console.log(context.cam.eye);
+}
+function down() {
+  context.cam.addVector(0, -0.1, 0);
+  context.linkCameraMatrix();
+  console.log(context.cam.eye);
+}
+function left() {
+  context.cam.addVector(-0.1, 0, 0);
+  context.linkCameraMatrix();
+  console.log(context.cam.eye);
+}
+function right() {
+  context.cam.addVector(0.1, 0, 0);
   context.linkCameraMatrix();
   console.log(context.cam.eye);
 }

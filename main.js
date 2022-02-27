@@ -17,7 +17,7 @@ function main() {
   context.gl.viewport(0, 0, context.canvas.width, context.canvas.height);
 
   // Set clear color
-  context.gl.clearColor(0.0, 0.0, 0.0, 1.0);
+  context.gl.clearColor(1.0, 1.0, 1.0, 1.0);
 
   // Initialize shaders
   context.program = initShaders(context.gl, "vshader", "fshader");
@@ -75,11 +75,14 @@ function render() {
   context.clear();
 
   //draw car
+  // context.car.rotateY(0.25);
+  // context.car.rotateX(0.05);
+
   context.car.draw(context.gl, context.aLoc, context.uLoc);
 
   //draw bunny
   //   console.log(context.bunny.vertices[context.bunny.vertices.length - 1]);
-
+  // context.bunny.move(0, 0, -0.01);
   context.bunny.draw(context.gl, context.aLoc, context.uLoc);
   requestAnimationFrame(render);
 }
@@ -97,7 +100,6 @@ async function loadData() {
   );
 
   let car = new Object3D(faceVertices, normals, diffuse, specular);
-  console.log(car.diffuse);
   car.initBuffers(context.gl);
   car.setBuffers(context.gl);
   car.move(0, -1, -5);
@@ -118,11 +120,11 @@ async function loadData() {
     "OBJ"
   );
 
-  let bunny = new Object3D(faceVertices, normals);
+  let bunny = new Object3D(faceVertices, normals, diffuse, specular);
   bunny.initBuffers(context.gl);
   bunny.setBuffers(context.gl);
   context.bunny = bunny;
-  context.bunny.move(5, 0.5, -5);
+  context.bunny.move(0.5, 0, -3);
   console.log("bunny loaded");
 
   console.log("done loading");

@@ -42,6 +42,8 @@ class Object3D {
     this.buffers = {
       v: null,
       n: null,
+      diffuse: diffuse,
+      specular: specular,
     };
 
     this.diffuse = diffuse;
@@ -89,6 +91,8 @@ class Object3D {
   initBuffers(gl) {
     this.buffers.v = gl.createBuffer();
     this.buffers.n = gl.createBuffer();
+    this.buffers.diffuse = gl.createBuffer();
+    this.buffers.specular = gl.createBuffer();
   }
   setBuffers(gl) {
     gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.v);
@@ -96,14 +100,28 @@ class Object3D {
 
     gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.n);
     gl.bufferData(gl.ARRAY_BUFFER, flatten(this.normals), gl.STATIC_DRAW);
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.diffuse);
+    gl.bufferData(gl.ARRAY_BUFFER, flatten(this.diffuse), gl.STATIC_DRAW);
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.specular);
+    gl.bufferData(gl.ARRAY_BUFFER, flatten(this.specular), gl.STATIC_DRAW);
   }
   draw(gl, aLocs, uLocs) {
     gl.uniformMatrix4fv(uLocs.mm, false, flatten(this.modelMatrix));
     gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.v);
     gl.vertexAttribPointer(aLocs.v, 4, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(aLocs.v);
+
+    gl.enableVertexAttribArray(aLocs.diffuse);
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.diffuse);
+    gl.vertexAttribPointer(aLocs.diffuse, 4, gl.FLOAT, false, 0, 0);
+
+    gl.enableVertexAttribArray(aLocs.specular);
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.specular);
+    gl.vertexAttribPointer(aLocs.specular, 4, gl.FLOAT, false, 0, 0);
+
     gl.drawArrays(gl.TRIANGLES, 0, this.vertices.length);
-    // gl.drawArrays(gl.LINE_STRIP, 0, this.vertices.length);
   }
 }
 
@@ -116,10 +134,15 @@ class ProgramContext {
     this.car;
     this.bunny;
     this.projectionMatrix;
+    this.lightPosition = [0, 10, 0];
+    //attribute locations
     this.aLoc = {
       v: null,
       n: null,
+      diffuse: null,
+      specular: null,
     };
+    //uniform locations
     this.uLoc = {
       mm: null,
       pm: null,
@@ -134,6 +157,8 @@ class ProgramContext {
     let gl = this.gl;
     this.aLoc.v = gl.getAttribLocation(this.program, "vPosition");
     this.aLoc.n = gl.getAttribLocation(this.program, "vNormal");
+    this.aLoc.diffuse = gl.getAttribLocation(this.program, "diffuseColor");
+    this.aLoc.specular = gl.getAttribLocation(this.program, "specularColor");
   }
   setUniformLocations() {
     this.uLoc.mm = this.gl.getUniformLocation(this.program, "modelMatrix");
