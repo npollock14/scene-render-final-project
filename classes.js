@@ -1,7 +1,7 @@
 class Camera {
-  constructor(x = 1, y = 4, z = 3) {
+  constructor(x = 0, y = 4, z = 8) {
     this.eye = [x, y, z];
-    this.at = [0, 0, -5];
+    this.at = [0, 0, 0];
     this.up = [0, 1, 0];
     this.matrix = lookAt(this.eye, this.at, this.up);
     this.log();
@@ -31,9 +31,10 @@ class Camera {
 }
 
 class Object3D {
-  constructor(vertices, normals, diffuse, specular) {
+  constructor(vertices, normals, diffuse, specular, indicies) {
     this.vertices = vertices;
     this.normals = normals;
+    this.indicies = indicies;
     this.modelMatrix = mat4();
 
     this.scaleMatrix = mat4();
@@ -135,8 +136,12 @@ class Object3D {
     gl.enableVertexAttribArray(aLocs.specular);
     gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.specular);
     gl.vertexAttribPointer(aLocs.specular, 4, gl.FLOAT, false, 0, 0);
-
-    gl.drawArrays(gl.TRIANGLES, 0, this.vertices.length);
+    let sum = 0;
+    // console.log(this.indicies[0]);
+    for (let i = 0; i < this.indicies.length; i++) {
+      gl.drawArrays(gl.TRIANGLE_FAN, sum, this.indicies[i]);
+      sum += this.indicies[i];
+    }
   }
 }
 

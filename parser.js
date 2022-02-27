@@ -4,6 +4,7 @@ let uvs = []; // List of UV definitions from OBJ
 let faceVertices = []; // Non-indexed final vertex definitions
 let faceNormals = []; // Non-indexed final normal definitions
 let faceUVs = []; // Non-indexed final UV definitions
+let faceIndices = [];
 
 let diffuse = [];
 let specular = [];
@@ -81,14 +82,17 @@ function parseObjFile(objFile) {
 
     // Triangulate convex polygon using fan triangulation
     let mat = getMat(currMaterial);
+    let index = 0;
     for (let i = 1; i < faceVerts.length - 1; i++) {
       diffuse.push(mat["diffuse"], mat["diffuse"], mat["diffuse"]);
       specular.push(mat["specular"], mat["specular"], mat["specular"]);
       faceVertices.push(faceVerts[0], faceVerts[i], faceVerts[i + 1]);
       faceNormals.push(faceNorms[0], faceNorms[i], faceNorms[i + 1]);
       faceUVs.push(faceTexs[0], faceTexs[i], faceTexs[i + 1]);
+      index += 3;
     }
-
+    faceIndices.push(index);
+    index = 0;
     faceVerts = []; // Indices into vertices array for this face
     faceNorms = []; // Indices into normal array for this face
     faceTexs = []; // Indices into UVs array for this face

@@ -107,10 +107,16 @@ async function loadData() {
     "OBJ"
   );
 
-  let car = new Object3D(faceVertices, faceNormals, diffuse, specular);
+  let car = new Object3D(
+    faceVertices,
+    faceNormals,
+    diffuse,
+    specular,
+    faceIndices
+  );
   car.initBuffers(context.gl);
   car.setBuffers(context.gl);
-  car.move(2, -0.2, -7.2);
+  car.move(2, -0.2, -2.2);
   car.rotateY(45);
   context.car = car;
 
@@ -128,11 +134,17 @@ async function loadData() {
     "OBJ"
   );
 
-  let bunny = new Object3D(faceVertices, faceNormals, diffuse, specular);
+  let bunny = new Object3D(
+    faceVertices,
+    faceNormals,
+    diffuse,
+    specular,
+    faceIndices
+  );
   bunny.initBuffers(context.gl);
   bunny.setBuffers(context.gl);
   context.bunny = bunny;
-  context.bunny.move(0.5, 0, -3);
+  context.bunny.move(0.5, 0, 2);
   console.log("bunny loaded");
 
   resetConstants();
@@ -146,11 +158,17 @@ async function loadData() {
     "https://web.cs.wpi.edu/~jmcuneo/cs4731/project3_1/lamp.obj",
     "OBJ"
   );
-  let lamp = new Object3D(faceVertices, faceNormals, diffuse, specular);
+  let lamp = new Object3D(
+    faceVertices,
+    faceNormals,
+    diffuse,
+    specular,
+    faceIndices
+  );
   lamp.initBuffers(context.gl);
   lamp.setBuffers(context.gl);
   context.lamp = lamp;
-  context.lamp.move(0, 0, -5);
+  context.lamp.move(0, 0, 0);
   //move the context.light to the lamp's position plus an offset of (0,3,0)
   // context.setLightPosition(0, 3, 0);
 
@@ -167,11 +185,17 @@ async function loadData() {
     "https://web.cs.wpi.edu/~jmcuneo/cs4731/project3_1/street.obj",
     "OBJ"
   );
-  let street = new Object3D(faceVertices, faceNormals, diffuse, specular);
+  let street = new Object3D(
+    faceVertices,
+    faceNormals,
+    diffuse,
+    specular,
+    faceIndices
+  );
   street.initBuffers(context.gl);
   street.setBuffers(context.gl);
   context.street = street;
-  context.street.move(0, 0, -5);
+  context.street.move(0, 0, 0);
   console.log("street loaded");
 
   console.log("done loading");
@@ -186,6 +210,8 @@ function resetConstants() {
   faceVertices = []; // Non-indexed final vertex definitions
   faceNormals = []; // Non-indexed final normal definitions
   faceUVs = []; // Non-indexed final UV definitions
+
+  faceIndices = [];
 
   diffuse = []; // List of diffuse colors per vertex
   specular = []; // List of specular colors per vertex
