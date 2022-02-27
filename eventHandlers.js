@@ -6,6 +6,10 @@ const keyMap = {
   a: left,
   d: right,
   l: toggleLight,
+  ArrowUp: moveLight.bind(null, 0, 0.1, 0),
+  ArrowDown: moveLight.bind(null, 0, -0.1, 0),
+  ArrowLeft: moveLight.bind(null, -0.1, 0, 0),
+  ArrowRight: moveLight.bind(null, 0.1, 0, 0),
 };
 
 let mouseDown = false;
@@ -69,4 +73,12 @@ function right() {
 }
 function toggleLight() {
   context.toggleLighting();
+}
+//move light to the right/left/up/down
+function moveLight(x, y, z) {
+  context.lightPosition[0] += x;
+  context.lightPosition[1] += y;
+  context.lightPosition[2] += z;
+  console.log(context.lightPosition);
+  context.linkLightPosition();
 }
