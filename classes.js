@@ -151,7 +151,7 @@ class ProgramContext {
     this.lamp;
     this.street;
     this.projectionMatrix;
-    this.lightPosition = vec4(-2, 3, 0, 1);
+    this.lightPosition = [0, 3, 0, 1];
     //attribute locations
     this.aLoc = {
       v: null,

@@ -152,7 +152,8 @@ async function loadData() {
   context.lamp = lamp;
   context.lamp.move(0, 0, -5);
   //move the context.light to the lamp's position plus an offset of (0,3,0)
-  context.setLightPosition(0, 5, 0);
+  // context.setLightPosition(0, 3, 0);
+
   console.log("lamp loaded");
 
   resetConstants();
