@@ -27,17 +27,6 @@
       varying float vLightingEnabled;
 
       void main() {
-        //   vec3 pos = (modelMatrix * vPosition).xyz;
-        //   L = normalize((lightPosition).xyz - pos);
-        //   N = normalize(vNormal).xyz;
-        //   V = normalize(-pos);
-
-        //   vLightingEnabled = lightingEnabled;
-        //   vDiffuseColor = diffuseColor;
-        //   vSpecularColor = specularColor;
-        //   gl_Position = projectionMatrix * cameraMatrix * modelMatrix * vPosition;
-
-
            vec3 pos = (cameraMatrix * modelMatrix * vPosition).xyz;
           L = normalize((cameraMatrix * modelMatrix * lightPosition).xyz - pos);
           N = normalize(cameraMatrix * modelMatrix * vNormal).xyz;
@@ -62,7 +51,7 @@
 
           vec3 R = (2.0 * dot(L, N) * N) - L;
           vec4 diffuse = vDiffuseColor * max(dot(L, N), 0.0);
-          vec4 specular = vSpecularColor * pow(max(dot(V, R), 0.0), 96.0);
+          vec4 specular = vSpecularColor * pow(max(dot(V, R), 0.0), 26.0);
           vec4 ambient = .2 * vDiffuseColor;
 
           vec4 fColor = ambient + ((vLightingEnabled > .5) ? (diffuse + specular) : vec4(0.0, 0.0, 0.0, 0.0));
