@@ -5,6 +5,7 @@ const keyMap = {
   Control: down,
   a: left,
   d: right,
+  l: toggleLight,
 };
 
 let mouseDown = false;
@@ -65,4 +66,7 @@ function right() {
   context.cam.addVector(0.1, 0, 0);
   context.linkCameraMatrix();
   console.log(context.cam.eye);
+}
+function toggleLight() {
+  context.toggleLighting();
 }

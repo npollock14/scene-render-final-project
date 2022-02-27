@@ -1,5 +1,6 @@
-TODO
-Camera movement and perspective projection
+TODO:
+- shiny param pass/use in shader
+- textures!
 
 
 TODO low priority:

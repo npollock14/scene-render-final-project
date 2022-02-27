@@ -17,7 +17,7 @@ function main() {
   context.gl.viewport(0, 0, context.canvas.width, context.canvas.height);
 
   // Set clear color
-  context.gl.clearColor(1.0, 1.0, 1.0, 1.0);
+  context.gl.clearColor(0, 0, 0, 1.0);
 
   // Initialize shaders
   context.program = initShaders(context.gl, "vshader", "fshader");
@@ -35,6 +35,8 @@ function main() {
 
   context.linkProjectionMatrix();
   context.linkCameraMatrix();
+  context.linkLightPosition();
+  context.linkLightingToggle();
 
   //enable depth testing and back-face culling
   context.gl.enable(context.gl.DEPTH_TEST);
@@ -84,6 +86,12 @@ function render() {
   //   console.log(context.bunny.vertices[context.bunny.vertices.length - 1]);
   // context.bunny.move(0, 0, -0.01);
   context.bunny.draw(context.gl, context.aLoc, context.uLoc);
+
+  //draw lamp
+  context.lamp.draw(context.gl, context.aLoc, context.uLoc);
+
+  //draw street
+  context.street.draw(context.gl, context.aLoc, context.uLoc);
   requestAnimationFrame(render);
 }
 
@@ -99,10 +107,10 @@ async function loadData() {
     "OBJ"
   );
 
-  let car = new Object3D(faceVertices, normals, diffuse, specular);
+  let car = new Object3D(faceVertices, faceNormals, diffuse, specular);
   car.initBuffers(context.gl);
   car.setBuffers(context.gl);
-  car.move(0, -1, -5);
+  car.move(2, -0.2, -7.2);
   car.rotateY(45);
   context.car = car;
 
@@ -120,12 +128,50 @@ async function loadData() {
     "OBJ"
   );
 
-  let bunny = new Object3D(faceVertices, normals, diffuse, specular);
+  let bunny = new Object3D(faceVertices, faceNormals, diffuse, specular);
   bunny.initBuffers(context.gl);
   bunny.setBuffers(context.gl);
   context.bunny = bunny;
   context.bunny.move(0.5, 0, -3);
   console.log("bunny loaded");
+
+  resetConstants();
+
+  // load a lamp
+  await loadFile(
+    "https://web.cs.wpi.edu/~jmcuneo/cs4731/project3_1/lamp.mtl",
+    "MTL"
+  );
+  await loadFile(
+    "https://web.cs.wpi.edu/~jmcuneo/cs4731/project3_1/lamp.obj",
+    "OBJ"
+  );
+  let lamp = new Object3D(faceVertices, faceNormals, diffuse, specular);
+  lamp.initBuffers(context.gl);
+  lamp.setBuffers(context.gl);
+  context.lamp = lamp;
+  context.lamp.move(0, 0, -5);
+  //move the context.light to the lamp's position plus an offset of (0,3,0)
+  context.setLightPosition(0, 5, 0);
+  console.log("lamp loaded");
+
+  resetConstants();
+
+  //load the street
+  await loadFile(
+    "https://web.cs.wpi.edu/~jmcuneo/cs4731/project3_1/street.mtl",
+    "MTL"
+  );
+  await loadFile(
+    "https://web.cs.wpi.edu/~jmcuneo/cs4731/project3_1/street.obj",
+    "OBJ"
+  );
+  let street = new Object3D(faceVertices, faceNormals, diffuse, specular);
+  street.initBuffers(context.gl);
+  street.setBuffers(context.gl);
+  context.street = street;
+  context.street.move(0, 0, -5);
+  console.log("street loaded");
 
   console.log("done loading");
   render(context);

@@ -1,58 +1,93 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="UTF-8">
-        <title>CS 4731 Final Project</title>
-        <script id="vshader" type="x-shader/x-vertex">
-            precision mediump float;
+  <head>
+    <meta charset="UTF-8" />
+    <title>CS 4731 Final Project</title>
+    <script id="vshader" type="x-shader/x-vertex">
+      precision mediump float;
 
-            attribute vec4 vPosition;
-            attribute vec4 vNormal;
+      attribute vec4 vPosition;
+      attribute vec4 vNormal;
 
-            attribute vec4 diffuseColor;
-            attribute vec4 specularColor;
-            varying vec4 vDiffuseColor;
-            varying vec4 vSpecularColor;
+      attribute vec4 diffuseColor;
+      attribute vec4 specularColor;
 
-            uniform mat4 lightPosition; //in world coordinates
+      varying vec4 vDiffuseColor;
+      varying vec4 vSpecularColor;
 
-            uniform mat4 modelMatrix;
-            uniform mat4 projectionMatrix;
-            uniform mat4 cameraMatrix;
-            
+      uniform vec4 lightPosition; //in world coordinates
 
-            void main() {
-                vDiffuseColor = diffuseColor + (specularColor*vec4(0,0,0,0));
-                gl_Position = projectionMatrix * cameraMatrix * modelMatrix * vPosition;
-            }
-        </script>
+      uniform mat4 modelMatrix;
+      uniform mat4 projectionMatrix;
+      uniform mat4 cameraMatrix;
 
-        <script id="fshader" type="x-shader/x-fragment">
-            precision mediump float;
+      varying vec3 L, N, V;
 
-            varying vec4 vDiffuseColor;
-            void main() {
-                gl_FragColor = vDiffuseColor;
-            }
-        </script>
+      uniform float lightingEnabled;
+      varying float vLightingEnabled;
 
-        <script type="text/javascript" src="lib/webgl-utils.js"></script>
-        <script type="text/javascript" src="lib/initShaders.js"></script>
-        <script type="text/javascript" src="lib/MV.js"></script>
+      void main() {
+        //   vec3 pos = (modelMatrix * vPosition).xyz;
+        //   L = normalize((lightPosition).xyz - pos);
+        //   N = normalize(vNormal).xyz;
+        //   V = normalize(-pos);
+
+        //   vLightingEnabled = lightingEnabled;
+        //   vDiffuseColor = diffuseColor;
+        //   vSpecularColor = specularColor;
+        //   gl_Position = projectionMatrix * cameraMatrix * modelMatrix * vPosition;
 
 
-        <script type="text/javascript" src="classes.js"></script>
-        <script type="text/javascript" src="main.js"></script>
-        <script type="text/javascript" src="parser.js"></script>
-        <script type="text/javascript" src="eventHandlers.js"></script>
+           vec3 pos = (cameraMatrix * modelMatrix * vPosition).xyz;
+          L = normalize((cameraMatrix * modelMatrix * lightPosition).xyz - pos);
+          N = normalize(cameraMatrix * modelMatrix * vNormal).xyz;
+          V = normalize(-pos);
 
-    </head>
+          vLightingEnabled = lightingEnabled;
+          vDiffuseColor = diffuseColor;
+          vSpecularColor = specularColor;
+          gl_Position = projectionMatrix * cameraMatrix * modelMatrix * vPosition;
 
-    <body onload="main()">
-        <h1 id="mode">CS 4731 Final Project</h1>
+      }
+    </script>
 
-        <canvas id="webgl" class="box" width="1600" height="900">
-            Please use a browser that supports the "canvas" tag.
-        </canvas>
-    </body>
+    <script id="fshader" type="x-shader/x-fragment">
+      precision mediump float;
+
+      varying vec4 vDiffuseColor;
+      varying vec4 vSpecularColor;
+      varying vec3 L, N, V;
+      varying float vLightingEnabled;
+      void main() {
+
+          vec3 R = (2.0 * dot(L, N) * N) - L;
+          vec4 diffuse = vDiffuseColor * max(dot(L, N), 0.0);
+          vec4 specular = vSpecularColor * pow(max(dot(V, R), 0.0), 96.0);
+          vec4 ambient = .2 * vDiffuseColor;
+
+          vec4 fColor = ambient + ((vLightingEnabled > .5) ? (diffuse + specular) : vec4(0.0, 0.0, 0.0, 0.0));
+            //vec4 fColor =diffuse;
+
+          fColor.a = 1.0;
+          gl_FragColor = fColor;
+      }
+    </script>
+
+    <script type="text/javascript" src="lib/webgl-utils.js"></script>
+    <script type="text/javascript" src="lib/initShaders.js"></script>
+    <script type="text/javascript" src="lib/MV.js"></script>
+
+    <script type="text/javascript" src="classes.js"></script>
+    <script type="text/javascript" src="main.js"></script>
+    <script type="text/javascript" src="parser.js"></script>
+    <script type="text/javascript" src="eventHandlers.js"></script>
+  </head>
+
+  <body onload="main()">
+    <h1 id="mode">CS 4731 Final Project</h1>
+
+    <canvas id="webgl" class="box" width="1600" height="900">
+      Please use a browser that supports the "canvas" tag.
+    </canvas>
+  </body>
 </html>
