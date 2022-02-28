@@ -1,13 +1,15 @@
 TODO:
-- shiny param pass/use in shader
-- textures!
-
+- skybox
+- reflections/refractions
+- shadows
+- parent/child object relations
 
 TODO low priority:
 - refactor how we get the data - dont want to clear constants every time
+- shiny param pass/use in shader
 
 Bugs:
-negative diffuse values
-z fighting occuring in road
-specular highlights broken on the road
-diffuse lighting seems off
+lighting issues
+
+Questions:
+lighting code correctness

@@ -20,6 +20,7 @@
       uniform mat4 modelMatrix;
       uniform mat4 projectionMatrix;
       uniform mat4 cameraMatrix;
+      uniform vec3 cameraPosition;
 
       varying vec3 L, N, V;
 
@@ -29,15 +30,14 @@
       attribute vec2 texCoord;
       varying vec2 vTexCoord;
 
-
-
       void main() {
-          vec3 pos = (cameraMatrix * modelMatrix * vPosition).xyz;
-          L = normalize((cameraMatrix*lightPosition).xyz - pos);
+          vec3 pos = (modelMatrix * vPosition).xyz; //only model and position?
+          L = normalize((lightPosition).xyz - pos);
           //was
           //L = normalize((cameraMatrix * modelMatrix * lightPosition).xyz - pos);
-          N = normalize(cameraMatrix * modelMatrix * vNormal).xyz;
-          V = normalize(-pos);
+          N = normalize(modelMatrix * vNormal).xyz;
+          V = normalize(cameraPosition.xyz - pos); //pt in space where camera is at
+          //unform to represent the inverse camera position
 
           vLightingEnabled = lightingEnabled;
           vTexCoord = texCoord;
@@ -61,18 +61,16 @@
       uniform float drawingTexture;
 
       void main() {
-
-
-
           vec3 R = (2.0 * dot(L, N) * N) - L;
-          //vec4 diffuse = vDiffuseColor * max(dot(L, N), 0.0);
-          vec4 diffuse = vDiffuseColor * dot(L, N);
+          vec4 diffuse = vDiffuseColor * max(dot(L, N), 0.0);
+          //vec4 diffuse = vDiffuseColor * dot(L, N);
 
-          vec4 specular = vSpecularColor * pow(max(dot(V, R), 0.0), 10.0);
-          vec4 ambient = .2 * vDiffuseColor;
+          vec4 specular = vSpecularColor * pow(max(dot(V, R), 0.0), 20.0);
+          vec4 ambient = .3 * vDiffuseColor;
 
           vec4 fColor = ambient + ((vLightingEnabled > .5) ? (diffuse + specular) : vec4(0.0, 0.0, 0.0, 0.0));
-          //vec4 fColor = diffuse;
+          //fColor = diffuse;
+          //fColor = specular;
 
           fColor.a = 1.0;
           gl_FragColor = fColor;
@@ -80,6 +78,8 @@
           if(drawingTexture > .5){
         gl_FragColor = texture2D(texture, vTexCoord) * fColor;
         }
+
+        //gl_FragColor = vec4(N,1.0);
       }
     </script>
 

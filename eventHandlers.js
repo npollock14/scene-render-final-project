@@ -22,23 +22,6 @@ function handleKeyDown(e) {
     keyMap[e.key]();
   }
 }
-//TODO implement mouse moving to change where the camera looks
-// function handleMouseMove(e) {
-//   if (!mouseDown) return;
-//   //find how much the x has changed
-//   let change = [e.movementX, e.movementY];
-//   let currPos = context.cam.eye;
-//   let currlookingAt = context.cam.at;
-
-//   //set a new lookingAt vector based on the change
-//   let newLookingAt = [
-//     currPos[0] + change[0] * 0.01,
-//     currPos[1] + change[1] * 0.01,
-//     currPos[2] - 1,
-//   ];
-//   context.cam.setAt(newLookingAt[0], newLookingAt[1], newLookingAt[2]);
-//   context.linkCameraMatrix();
-// }
 
 //translate the camera forward
 function foward() {

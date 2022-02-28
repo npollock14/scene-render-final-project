@@ -198,12 +198,15 @@ class ProgramContext {
     this.gl;
     this.program;
     this.cam = new Camera();
+
+    //Scene objects
     this.car;
     this.bunny;
     this.lamp;
     this.street;
+
     this.projectionMatrix;
-    this.lightPosition = [0, 3, 0, 1];
+    this.lightPosition = [0, 3, -5, 1];
     //attribute locations
     this.aLoc = {
       v: null,
@@ -220,13 +223,14 @@ class ProgramContext {
       lightPosition: null,
       lightingEnabled: null,
       drawingTexture: null,
+      camPosition: null,
     };
     this.shaderFlags = {
       lightingEnabled: true,
       drawingTexture: false,
     };
   }
-  clear() {
+  clearCanvas() {
     let gl = this.gl;
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
   }
@@ -254,6 +258,10 @@ class ProgramContext {
       this.program,
       "drawingTexture"
     );
+    this.uLoc.camPosition = this.gl.getUniformLocation(
+      this.program,
+      "cameraPosition"
+    );
     //give drawingTexture a default value of 0.0
     this.gl.uniform1f(this.uLoc.drawingTexture, 0.0);
   }
@@ -269,6 +277,7 @@ class ProgramContext {
   }
   linkCameraMatrix() {
     this.gl.uniformMatrix4fv(this.uLoc.cm, false, flatten(this.cam.matrix));
+    this.gl.uniform3fv(this.uLoc.camPosition, flatten(this.cam.eye));
   }
   toggleLighting() {
     this.shaderFlags.lightingEnabled = !this.shaderFlags.lightingEnabled;

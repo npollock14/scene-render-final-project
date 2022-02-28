@@ -54,17 +54,13 @@ function main() {
 }
 
 function render() {
-  context.clear();
+  context.clearCanvas();
 
+  //DRAW SCENE OBJECTS
   //draw car
-  context.car.rotateY(0.0);
-  context.car.rotateZ(0.25);
-
   context.car.draw(context.gl, context.aLoc, context.uLoc, context);
 
   //draw bunny
-  //   console.log(context.bunny.vertices[context.bunny.vertices.length - 1]);
-  // context.bunny.move(0, 0, -0.01);
   context.bunny.draw(context.gl, context.aLoc, context.uLoc, context);
 
   //draw lamp
@@ -75,6 +71,7 @@ function render() {
 
   //draw stop sign
   context.stopSign.draw(context.gl, context.aLoc, context.uLoc, context);
+
   requestAnimationFrame(render);
 }
 
