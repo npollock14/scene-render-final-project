@@ -26,13 +26,21 @@
       uniform float lightingEnabled;
       varying float vLightingEnabled;
 
+      attribute vec2 texCoord;
+      varying vec2 vTexCoord;
+
+
+
       void main() {
-           vec3 pos = (cameraMatrix * modelMatrix * vPosition).xyz;
-          L = normalize((cameraMatrix * modelMatrix * lightPosition).xyz - pos);
+          vec3 pos = (cameraMatrix * modelMatrix * vPosition).xyz;
+          L = normalize((cameraMatrix*lightPosition).xyz - pos);
+          //was
+          //L = normalize((cameraMatrix * modelMatrix * lightPosition).xyz - pos);
           N = normalize(cameraMatrix * modelMatrix * vNormal).xyz;
           V = normalize(-pos);
 
           vLightingEnabled = lightingEnabled;
+          vTexCoord = texCoord;
           vDiffuseColor = diffuseColor;
           vSpecularColor = specularColor;
           gl_Position = projectionMatrix * cameraMatrix * modelMatrix * vPosition;
@@ -47,18 +55,31 @@
       varying vec4 vSpecularColor;
       varying vec3 L, N, V;
       varying float vLightingEnabled;
+
+      varying vec2 vTexCoord;
+      uniform sampler2D texture;
+      uniform float drawingTexture;
+
       void main() {
 
+
+
           vec3 R = (2.0 * dot(L, N) * N) - L;
-          vec4 diffuse = vDiffuseColor * max(dot(L, N), 0.0);
+          //vec4 diffuse = vDiffuseColor * max(dot(L, N), 0.0);
+          vec4 diffuse = vDiffuseColor * dot(L, N);
+
           vec4 specular = vSpecularColor * pow(max(dot(V, R), 0.0), 10.0);
           vec4 ambient = .2 * vDiffuseColor;
 
           vec4 fColor = ambient + ((vLightingEnabled > .5) ? (diffuse + specular) : vec4(0.0, 0.0, 0.0, 0.0));
-            //vec4 fColor =diffuse;
+          //vec4 fColor = diffuse;
 
           fColor.a = 1.0;
           gl_FragColor = fColor;
+
+          if(drawingTexture > .5){
+        gl_FragColor = texture2D(texture, vTexCoord) * fColor;
+        }
       }
     </script>
 

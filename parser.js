@@ -5,6 +5,8 @@ let faceVertices = []; // Non-indexed final vertex definitions
 let faceNormals = []; // Non-indexed final normal definitions
 let faceUVs = []; // Non-indexed final UV definitions
 
+let textureImage = null; // Image for the texture
+
 let diffuse = [];
 let specular = [];
 
@@ -161,7 +163,7 @@ function parseFaces(line) {
  *
  * @param mtlFile The file to parse.
  */
-function parseMtlFile(mtlFile) {
+async function parseMtlFile(mtlFile) {
   // Sanitize the MTL file
   let mtlLines = mtlFile.split("\n");
   mtlLines = mtlLines.filter((line) => {
@@ -200,8 +202,20 @@ function parseMtlFile(mtlFile) {
       textureURL =
         "https://web.cs.wpi.edu/~jmcuneo/cs4731/project3/" +
         line.substr(line.indexOf(" ") + 1);
+      textureImage = await getTextureFromURL(textureURL);
     }
   }
+}
+
+//returns image data from a given image url
+async function getTextureFromURL(urlString) {
+  return new Promise((resolve, reject) => {
+    let img = new Image();
+    img.onerror = reject;
+    img.crossOrigin = "";
+    img.src = urlString;
+    img.onload = () => resolve(img);
+  });
 }
 
 //takes the matName and returns the diffuse color and specular colors in an array

@@ -4,7 +4,6 @@ class Camera {
     this.at = [0, 0, -5];
     this.up = [0, 1, 0];
     this.matrix = lookAt(this.eye, this.at, this.up);
-    this.log();
   }
 
   setPosition(x, y, z) {
@@ -45,13 +44,18 @@ class Object3D {
       n: null,
       diffuse: diffuse,
       specular: specular,
+      uv: null,
     };
 
     this.diffuse = diffuse;
     this.specular = specular;
 
-    console.log("normals len:" + normals.length);
-    console.log("verts len: " + vertices.length);
+    this.hasTexture = false;
+
+    this.texture = {
+      image: null,
+      uv: [],
+    };
   }
   setModelMatrix() {
     this.modelMatrix = mult(
@@ -59,6 +63,7 @@ class Object3D {
       mult(this.rotateMatrix, this.scaleMatrix)
     );
   }
+
   scale(x, y, z) {
     this.scaleMatrix = mult(this.scaleMatrix, scalem(x, y, z));
     this.setModelMatrix();
@@ -103,6 +108,36 @@ class Object3D {
     this.buffers.n = gl.createBuffer();
     this.buffers.diffuse = gl.createBuffer();
     this.buffers.specular = gl.createBuffer();
+    if (this.hasTexture) {
+      this.buffers.uv = gl.createBuffer();
+    }
+  }
+
+  addTexture(image, uvs, gl, program) {
+    this.hasTexture = true;
+    this.texture.image = image;
+    this.texture.uv = uvs;
+
+    var tex = gl.createTexture();
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, tex);
+
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+    gl.texImage2D(
+      gl.TEXTURE_2D,
+      0,
+      gl.RGB,
+      gl.RGB,
+      gl.UNSIGNED_BYTE,
+      this.texture.image
+    );
+
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+
+    gl.uniform1i(gl.getUniformLocation(program, "texture"), 0);
   }
   setBuffers(gl) {
     gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.v);
@@ -116,8 +151,13 @@ class Object3D {
 
     gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.specular);
     gl.bufferData(gl.ARRAY_BUFFER, flatten(this.specular), gl.STATIC_DRAW);
+
+    if (this.hasTexture) {
+      gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.uv);
+      gl.bufferData(gl.ARRAY_BUFFER, flatten(this.texture.uv), gl.STATIC_DRAW);
+    }
   }
-  draw(gl, aLocs, uLocs) {
+  draw(gl, aLocs, uLocs, context) {
     gl.uniformMatrix4fv(uLocs.mm, false, flatten(this.modelMatrix));
 
     gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.v);
@@ -128,13 +168,25 @@ class Object3D {
     gl.vertexAttribPointer(aLocs.n, 4, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(aLocs.n);
 
-    gl.enableVertexAttribArray(aLocs.diffuse);
     gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.diffuse);
+    gl.enableVertexAttribArray(aLocs.diffuse);
     gl.vertexAttribPointer(aLocs.diffuse, 4, gl.FLOAT, false, 0, 0);
 
-    gl.enableVertexAttribArray(aLocs.specular);
     gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.specular);
+    gl.enableVertexAttribArray(aLocs.specular);
     gl.vertexAttribPointer(aLocs.specular, 4, gl.FLOAT, false, 0, 0);
+
+    if (this.hasTexture) {
+      gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.uv);
+      gl.enableVertexAttribArray(aLocs.uv);
+      gl.vertexAttribPointer(aLocs.uv, 2, gl.FLOAT, false, 0, 0);
+
+      context.shaderFlags.drawingTexture = true;
+    } else {
+      context.shaderFlags.drawingTexture = false;
+    }
+
+    context.linkDrawingTexture();
 
     gl.drawArrays(gl.TRIANGLES, 0, this.vertices.length);
   }
@@ -158,6 +210,7 @@ class ProgramContext {
       n: null,
       diffuse: null,
       specular: null,
+      uv: null,
     };
     //uniform locations
     this.uLoc = {
@@ -166,9 +219,11 @@ class ProgramContext {
       cm: null,
       lightPosition: null,
       lightingEnabled: null,
+      drawingTexture: null,
     };
     this.shaderFlags = {
       lightingEnabled: true,
+      drawingTexture: false,
     };
   }
   clear() {
@@ -181,6 +236,7 @@ class ProgramContext {
     this.aLoc.n = gl.getAttribLocation(this.program, "vNormal");
     this.aLoc.diffuse = gl.getAttribLocation(this.program, "diffuseColor");
     this.aLoc.specular = gl.getAttribLocation(this.program, "specularColor");
+    this.aLoc.uv = gl.getAttribLocation(this.program, "texCoord");
   }
   setUniformLocations() {
     this.uLoc.mm = this.gl.getUniformLocation(this.program, "modelMatrix");
@@ -194,6 +250,12 @@ class ProgramContext {
       this.program,
       "lightingEnabled"
     );
+    this.uLoc.drawingTexture = this.gl.getUniformLocation(
+      this.program,
+      "drawingTexture"
+    );
+    //give drawingTexture a default value of 0.0
+    this.gl.uniform1f(this.uLoc.drawingTexture, 0.0);
   }
   linkProjectionMatrix() {
     this.gl.uniformMatrix4fv(
@@ -218,6 +280,13 @@ class ProgramContext {
       this.shaderFlags.lightingEnabled ? 1.0 : 0.0
     );
   }
+  linkDrawingTexture() {
+    this.gl.uniform1f(
+      this.uLoc.drawingTexture,
+      this.shaderFlags.drawingTexture ? 1.0 : 0.0
+    );
+  }
+
   setLightPosition(x, y, z) {
     this.lightPosition = vec4(x, y, z, 1);
     this.linkLightPosition();

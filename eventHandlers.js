@@ -10,13 +10,14 @@ const keyMap = {
   ArrowDown: moveLight.bind(null, 0, -0.1, 0),
   ArrowLeft: moveLight.bind(null, -0.1, 0, 0),
   ArrowRight: moveLight.bind(null, 0.1, 0, 0),
+  ",": moveLight.bind(null, 0, 0, 0.1),
+  ".": moveLight.bind(null, 0, 0, -0.1),
 };
 
 let mouseDown = false;
 
 function handleKeyDown(e) {
   //if the key is mapped to a function, call it
-  console.log(e.key);
   if (keyMap[e.key]) {
     keyMap[e.key]();
   }
@@ -43,33 +44,27 @@ function handleKeyDown(e) {
 function foward() {
   context.cam.addVector(0, 0, -0.1);
   context.linkCameraMatrix();
-  console.log(context.cam.eye);
 }
 //translate the camera backward
 function backwards() {
   context.cam.addVector(0, 0, 0.1);
   context.linkCameraMatrix();
-  console.log(context.cam.eye);
 }
 function up() {
   context.cam.addVector(0, 0.1, 0);
   context.linkCameraMatrix();
-  console.log(context.cam.eye);
 }
 function down() {
   context.cam.addVector(0, -0.1, 0);
   context.linkCameraMatrix();
-  console.log(context.cam.eye);
 }
 function left() {
   context.cam.addVector(-0.1, 0, 0);
   context.linkCameraMatrix();
-  console.log(context.cam.eye);
 }
 function right() {
   context.cam.addVector(0.1, 0, 0);
   context.linkCameraMatrix();
-  console.log(context.cam.eye);
 }
 function toggleLight() {
   context.toggleLighting();

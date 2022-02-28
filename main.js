@@ -47,26 +47,6 @@ function main() {
   document.onkeydown = (e) => {
     handleKeyDown(e);
   };
-  //TODO implement mouse moving to change where the camera looks
-  // document.onmousemove = (e) => {
-  //   handleMouseMove(e);
-  // };
-  // document.onmousedown = (e) => {
-  //   //if lmb is pressed, set mouseDown to true
-  //   if (e.button === 0) {
-  //     mouseDown = true;
-  //   }
-  // };
-  // document.onmouseup = (e) => {
-  //   //if lmb is released, set mouseDown to false
-  //   if (e.button === 0) {
-  //     mouseDown = false;
-  //   }
-  // };
-  // //if mouse leaves the canvas, mouseDown is set to false
-  // context.canvas.onmouseleave = () => {
-  //   mouseDown = false;
-  // };
 
   //can now begin to load data asynchronously
 
@@ -77,26 +57,30 @@ function render() {
   context.clear();
 
   //draw car
-  // context.car.rotateY(0.25);
-  // context.car.rotateX(0.05);
+  context.car.rotateY(0.0);
+  context.car.rotateZ(0.25);
 
-  context.car.draw(context.gl, context.aLoc, context.uLoc);
+  context.car.draw(context.gl, context.aLoc, context.uLoc, context);
 
   //draw bunny
   //   console.log(context.bunny.vertices[context.bunny.vertices.length - 1]);
   // context.bunny.move(0, 0, -0.01);
-  context.bunny.draw(context.gl, context.aLoc, context.uLoc);
+  context.bunny.draw(context.gl, context.aLoc, context.uLoc, context);
 
   //draw lamp
-  context.lamp.draw(context.gl, context.aLoc, context.uLoc);
+  context.lamp.draw(context.gl, context.aLoc, context.uLoc, context);
 
   //draw street
-  context.street.draw(context.gl, context.aLoc, context.uLoc);
+  context.street.draw(context.gl, context.aLoc, context.uLoc, context);
+
+  //draw stop sign
+  context.stopSign.draw(context.gl, context.aLoc, context.uLoc, context);
   requestAnimationFrame(render);
 }
 
 async function loadData() {
-  console.log("loading data");
+  console.log("LOADING DATA");
+
   //   load the car
   await loadFile(
     "https://web.cs.wpi.edu/~jmcuneo/cs4731/project3_1/car.mtl",
@@ -111,10 +95,11 @@ async function loadData() {
   car.initBuffers(context.gl);
   car.setBuffers(context.gl);
   car.move(2, -0.2, -7.2);
-  car.rotateY(45);
+  car.move(0, 1, 5);
+  //car.rotateY(45);
   context.car = car;
 
-  console.log("car loaded");
+  console.log("car LOADED");
 
   resetConstants();
 
@@ -133,7 +118,7 @@ async function loadData() {
   bunny.setBuffers(context.gl);
   context.bunny = bunny;
   context.bunny.move(0.5, 0, -3);
-  console.log("bunny loaded");
+  console.log("bunny LOADED");
 
   resetConstants();
 
@@ -154,7 +139,7 @@ async function loadData() {
   //move the context.light to the lamp's position plus an offset of (0,3,0)
   // context.setLightPosition(0, 3, 0);
 
-  console.log("lamp loaded");
+  console.log("lamp LOADED");
 
   resetConstants();
 
@@ -172,9 +157,29 @@ async function loadData() {
   street.setBuffers(context.gl);
   context.street = street;
   context.street.move(0, 0, -5);
-  console.log("street loaded");
+  console.log("street LOADED");
 
-  console.log("done loading");
+  resetConstants();
+
+  // load the stop sign
+  await loadFile(
+    "https://web.cs.wpi.edu/~jmcuneo/cs4731/project3_1/stopsign.mtl",
+    "MTL"
+  );
+  await loadFile(
+    "https://web.cs.wpi.edu/~jmcuneo/cs4731/project3_1/stopsign.obj",
+    "OBJ"
+  );
+  let stopSign = new Object3D(faceVertices, faceNormals, diffuse, specular);
+  stopSign.addTexture(textureImage, faceUVs, context.gl, context.program);
+  stopSign.initBuffers(context.gl);
+  stopSign.setBuffers(context.gl);
+  context.stopSign = stopSign;
+  context.stopSign.move(4.5, 0, -7);
+  context.stopSign.rotateY(-90);
+  console.log("stop sign LOADED");
+
+  console.log("DONE LOADING");
   render(context);
 }
 
@@ -186,6 +191,8 @@ function resetConstants() {
   faceVertices = []; // Non-indexed final vertex definitions
   faceNormals = []; // Non-indexed final normal definitions
   faceUVs = []; // Non-indexed final UV definitions
+
+  textureImage = null; // Image object for texture
 
   diffuse = []; // List of diffuse colors per vertex
   specular = []; // List of specular colors per vertex
