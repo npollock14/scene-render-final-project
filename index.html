@@ -31,13 +31,10 @@
       varying vec2 vTexCoord;
 
       void main() {
-          vec3 pos = (modelMatrix * vPosition).xyz; //only model and position?
+          vec3 pos = (modelMatrix * vPosition).xyz; //to world coordinates
           L = normalize((lightPosition).xyz - pos);
-          //was
-          //L = normalize((cameraMatrix * modelMatrix * lightPosition).xyz - pos);
           N = normalize(modelMatrix * vNormal).xyz;
-          V = normalize(cameraPosition.xyz - pos); //pt in space where camera is at
-          //unform to represent the inverse camera position
+          V = normalize(cameraPosition.xyz - pos); //vector to camera
 
           vLightingEnabled = lightingEnabled;
           vTexCoord = texCoord;

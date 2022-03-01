@@ -84,9 +84,9 @@ function render() {
 //redo this using move and rotate
 function carAnimation(car, context, frameCount) {
   let rotateSpeed = -0.5;
-  // return mult(rotateY(rotateSpeed), car.modelMatrix);
-  car.move(0, 0, 0.01);
-  car.rotateY(rotateSpeed);
+  return mult(rotateY(rotateSpeed), car.modelMatrix);
+  // car.move(0, 0, 0.01);
+  // car.rotateY(rotateSpeed);
 }
 
 async function loadData() {
@@ -110,7 +110,6 @@ async function loadData() {
   //car.move(0, 1, 5);
   car.rotateY(0);
   context.car = car;
-  context.cameras[0].parentObject = car;
 
   console.log("car LOADED");
 
@@ -131,6 +130,7 @@ async function loadData() {
   bunny.setBuffers(context.gl);
   context.bunny = bunny;
   context.bunny.move(0, 0.7, 1.5);
+
   console.log("bunny LOADED");
 
   resetConstants();

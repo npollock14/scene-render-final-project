@@ -3,7 +3,6 @@ class Camera {
     const initPos = [x, y, z];
     this.eyeRel = [x, y, z];
     this.eyeActual = [];
-    this.parentObject = null;
     this.at = [0, 0, 0];
     this.up = [0, 1, 0];
     this.rotation = 0;
@@ -24,27 +23,12 @@ class Camera {
     this.eyeRel = initPos;
   }
 
-  computeRealPosition() {
-    if (this.parentObject == null) {
-      return { eye: this.eyeRel, matrix: this.matrixRel };
-    }
-
-    let actualTransMatrix = this.parentObject.getTransformMatrix();
-    actualTransMatrix = mult(actualTransMatrix, this.matrixRel);
-    let eyePt = mult(actualTransMatrix, vec4(0, 0, 0, 1));
-    return {
-      eye: [eyePt[0], eyePt[1], eyePt[2]],
-      matrix: actualTransMatrix,
-    };
-  }
-
   setPosition(x, y, z) {
     this.eyeRel = [x, y, z];
     this.matrixRel = lookAt(this.eyeRel, this.at, this.up);
   }
-  setRotationY(degrees){
+  setRotationY(degrees) {
     //set AT to a rotation about the cameras position
-
   }
   addVector(x, y, z) {
     this.eyeRel[0] += x;
@@ -207,23 +191,20 @@ class Object3D {
       gl.bufferData(gl.ARRAY_BUFFER, flatten(this.texture.uv), gl.STATIC_DRAW);
     }
   }
+
+  //OBJECT DRAW CALL
   draw(gl, aLocs, uLocs, context, animationMethod) {
-    let postAnimModelMatrix = this.modelMatrix;
     if (this.animationEnabled) {
-      animationMethod(this, context, this.frameCount);
-      // this.position = mult(postAnimModelMatrix, [0, 0, 0, 1]);
+      this.modelMatrix = animationMethod(this, context, this.frameCount);
     }
 
-    //if the camera is linked to an object, then make sure to update the camera each frame
-    if (context.cameras[context.activeCam].parentObject != null) {
-      context.linkCameraMatrix();
-    }
+    let resultantModelMatrix = this.modelMatrix;
 
     if (this.parent != null) {
-      gl.uniformMatrix4fv(uLocs.mm, false, flatten(this.getTransformMatrix()));
-    } else {
-      gl.uniformMatrix4fv(uLocs.mm, false, flatten(this.modelMatrix));
+      resultantModelMatrix = this.getTransformMatrix();
     }
+
+    gl.uniformMatrix4fv(uLocs.mm, false, flatten(resultantModelMatrix));
 
     gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.v);
     gl.vertexAttribPointer(aLocs.v, 4, gl.FLOAT, false, 0, 0);
@@ -265,7 +246,7 @@ class ProgramContext {
     this.gl;
     this.program;
     this.activeCam = 1;
-    this.cameras = [new Camera(0, 0, 0), new Camera()];
+    this.cameras = [new Camera(0, 4, -10), new Camera()];
 
     //Scene objects
     this.car;
@@ -345,10 +326,10 @@ class ProgramContext {
     this.gl.uniform4fv(this.uLoc.lightPosition, flatten(this.lightPosition));
   }
   linkCameraMatrix() {
-    //get the cameras true matrix/position
-    let camData = this.cameras[this.activeCam].computeRealPosition();
-    this.gl.uniformMatrix4fv(this.uLoc.cm, false, flatten(camData.matrix));
-    this.gl.uniform3fv(this.uLoc.camPosition, flatten(camData.eye));
+    let camMatrix = this.cameras[this.activeCam].matrixRel;
+    let camEyePos = this.cameras[this.activeCam].eyeRel;
+    this.gl.uniformMatrix4fv(this.uLoc.cm, false, flatten(camMatrix));
+    this.gl.uniform3fv(this.uLoc.camPosition, flatten(camEyePos));
   }
   toggleLighting() {
     this.shaderFlags.lightingEnabled = !this.shaderFlags.lightingEnabled;
