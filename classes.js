@@ -6,6 +6,7 @@ class Camera {
     this.parentObject = null;
     this.at = [0, 0, 0];
     this.up = [0, 1, 0];
+    this.rotation = 0;
 
     //if eyeRel matches atRel, subtract 1 from atRel's z to avoid divide by zero
     if (
@@ -40,6 +41,10 @@ class Camera {
   setPosition(x, y, z) {
     this.eyeRel = [x, y, z];
     this.matrixRel = lookAt(this.eyeRel, this.at, this.up);
+  }
+  setRotationY(degrees){
+    //set AT to a rotation about the cameras position
+
   }
   addVector(x, y, z) {
     this.eyeRel[0] += x;
