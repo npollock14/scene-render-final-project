@@ -1,29 +1,60 @@
 class Camera {
   constructor(x = 1, y = 4, z = 8) {
-    this.eye = [x, y, z];
+    const initPos = [x, y, z];
+    this.eyeRel = [x, y, z];
+    this.eyeActual = [];
+    this.parentObject = null;
     this.at = [0, 0, 0];
     this.up = [0, 1, 0];
-    this.matrix = lookAt(this.eye, this.at, this.up);
+
+    //if eyeRel matches atRel, subtract 1 from atRel's z to avoid divide by zero
+    if (
+      this.eyeRel[0] == this.at[0] &&
+      this.eyeRel[1] == this.at[1] &&
+      this.eyeRel[2] == this.at[2]
+    ) {
+      this.at[2] -= 1;
+      //warn  user
+      console.warn("Eye and at were the same. Subtracted 1 from at's z.");
+    }
+    this.matrixRel = lookAt(this.eyeRel, this.at, this.up);
+  }
+  resetCameraPos() {
+    this.eyeRel = initPos;
+  }
+
+  computeRealPosition() {
+    if (this.parentObject == null) {
+      return { eye: this.eyeRel, matrix: this.matrixRel };
+    }
+
+    let actualTransMatrix = this.parentObject.getTransformMatrix();
+    actualTransMatrix = mult(actualTransMatrix, this.matrixRel);
+    let eyePt = mult(actualTransMatrix, vec4(0, 0, 0, 1));
+    return {
+      eye: [eyePt[0], eyePt[1], eyePt[2]],
+      matrix: actualTransMatrix,
+    };
   }
 
   setPosition(x, y, z) {
-    this.eye = [x, y, z];
-    this.matrix = lookAt(this.eye, this.at, this.up);
+    this.eyeRel = [x, y, z];
+    this.matrixRel = lookAt(this.eyeRel, this.at, this.up);
   }
   addVector(x, y, z) {
-    this.eye[0] += x;
-    this.eye[1] += y;
-    this.eye[2] += z;
-    this.matrix = lookAt(this.eye, this.at, this.up);
+    this.eyeRel[0] += x;
+    this.eyeRel[1] += y;
+    this.eyeRel[2] += z;
+    this.matrixRel = lookAt(this.eyeRel, this.at, this.up);
   }
   setAt(x, y, z) {
     this.at = [x, y, z];
-    this.matrix = lookAt(this.eye, this.at, this.up);
+    this.matrixRel = lookAt(this.eyeRel, this.at, this.up);
   }
 
   log() {
     console.log("Camera:");
-    console.log("eye: " + this.eye);
+    console.log("eye: " + this.eyeRel);
     console.log("at: " + this.at);
     console.log("up: " + this.up);
   }
@@ -172,8 +203,15 @@ class Object3D {
     }
   }
   draw(gl, aLocs, uLocs, context, animationMethod) {
+    let postAnimModelMatrix = this.modelMatrix;
     if (this.animationEnabled) {
       animationMethod(this, context, this.frameCount);
+      // this.position = mult(postAnimModelMatrix, [0, 0, 0, 1]);
+    }
+
+    //if the camera is linked to an object, then make sure to update the camera each frame
+    if (context.cameras[context.activeCam].parentObject != null) {
+      context.linkCameraMatrix();
     }
 
     if (this.parent != null) {
@@ -221,7 +259,8 @@ class ProgramContext {
     this.canvas;
     this.gl;
     this.program;
-    this.cam = new Camera();
+    this.activeCam = 1;
+    this.cameras = [new Camera(0, 0, 0), new Camera()];
 
     //Scene objects
     this.car;
@@ -301,8 +340,10 @@ class ProgramContext {
     this.gl.uniform4fv(this.uLoc.lightPosition, flatten(this.lightPosition));
   }
   linkCameraMatrix() {
-    this.gl.uniformMatrix4fv(this.uLoc.cm, false, flatten(this.cam.matrix));
-    this.gl.uniform3fv(this.uLoc.camPosition, flatten(this.cam.eye));
+    //get the cameras true matrix/position
+    let camData = this.cameras[this.activeCam].computeRealPosition();
+    this.gl.uniformMatrix4fv(this.uLoc.cm, false, flatten(camData.matrix));
+    this.gl.uniform3fv(this.uLoc.camPosition, flatten(camData.eye));
   }
   toggleLighting() {
     this.shaderFlags.lightingEnabled = !this.shaderFlags.lightingEnabled;

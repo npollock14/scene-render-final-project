@@ -11,5 +11,10 @@ TODO low priority:
 Bugs:
 lighting issues
 
+camera eye is used to compute overall matrix
+overall matrix is changed 
+eye needs to change
+maybe just the eye we send over needs to change?
+
 Questions:
 lighting code correctness

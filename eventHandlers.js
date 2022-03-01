@@ -1,10 +1,10 @@
 const keyMap = {
-  w: foward,
-  s: backwards,
-  " ": up,
-  Control: down,
-  a: left,
-  d: right,
+  w: translateCamera.bind(null, 0, 0, -0.1),
+  s: translateCamera.bind(null, 0, 0, 0.1),
+  a: translateCamera.bind(null, -0.1, 0, 0),
+  d: translateCamera.bind(null, 0.1, 0, 0),
+  " ": translateCamera.bind(null, 0, 0.1, 0),
+  Control: translateCamera.bind(null, 0, -0.1, 0),
   l: toggleLight,
   ArrowUp: moveLight.bind(null, 0, 0.1, 0),
   ArrowDown: moveLight.bind(null, 0, -0.1, 0),
@@ -13,9 +13,15 @@ const keyMap = {
   ",": moveLight.bind(null, 0, 0, 0.1),
   ".": moveLight.bind(null, 0, 0, -0.1),
   m: toggleCarAnimation,
+  c: toggleCamera,
 };
 
 let mouseDown = false;
+
+function toggleCamera() {
+  context.activeCam = (context.activeCam + 1) % context.cameras.length;
+  context.linkCameraMatrix();
+}
 
 function handleKeyDown(e) {
   //if the key is mapped to a function, call it
@@ -24,30 +30,10 @@ function handleKeyDown(e) {
   }
 }
 
-//translate the camera forward
-function foward() {
-  context.cam.addVector(0, 0, -0.1);
-  context.linkCameraMatrix();
-}
-//translate the camera backward
-function backwards() {
-  context.cam.addVector(0, 0, 0.1);
-  context.linkCameraMatrix();
-}
-function up() {
-  context.cam.addVector(0, 0.1, 0);
-  context.linkCameraMatrix();
-}
-function down() {
-  context.cam.addVector(0, -0.1, 0);
-  context.linkCameraMatrix();
-}
-function left() {
-  context.cam.addVector(-0.1, 0, 0);
-  context.linkCameraMatrix();
-}
-function right() {
-  context.cam.addVector(0.1, 0, 0);
+//translate the camera
+
+function translateCamera(x, y, z) {
+  context.cameras[context.activeCam].addVector(x, y, z);
   context.linkCameraMatrix();
 }
 function toggleLight() {

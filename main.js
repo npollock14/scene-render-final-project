@@ -81,9 +81,12 @@ function render() {
   requestAnimationFrame(render);
 }
 
+//redo this using move and rotate
 function carAnimation(car, context, frameCount) {
   let rotateSpeed = -0.5;
-  car.modelMatrix = mult(rotateY(rotateSpeed), car.modelMatrix);
+  // return mult(rotateY(rotateSpeed), car.modelMatrix);
+  car.move(0, 0, 0.01);
+  car.rotateY(rotateSpeed);
 }
 
 async function loadData() {
@@ -107,6 +110,7 @@ async function loadData() {
   //car.move(0, 1, 5);
   car.rotateY(0);
   context.car = car;
+  context.cameras[0].parentObject = car;
 
   console.log("car LOADED");
 
