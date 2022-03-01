@@ -1,7 +1,7 @@
 class Camera {
-  constructor(x = 1, y = 4, z = 3) {
+  constructor(x = 1, y = 4, z = 8) {
     this.eye = [x, y, z];
-    this.at = [0, 0, -5];
+    this.at = [0, 0, 0];
     this.up = [0, 1, 0];
     this.matrix = lookAt(this.eye, this.at, this.up);
   }
@@ -35,6 +35,8 @@ class Object3D {
     this.normals = normals;
     this.modelMatrix = mat4();
 
+    this.parent = null;
+
     this.scaleMatrix = mat4();
     this.translateMatrix = mat4();
     this.position = [0, 0, 0];
@@ -56,7 +58,19 @@ class Object3D {
       image: null,
       uv: [],
     };
+    this.frameCount = 0;
+    this.animationEnabled = false;
   }
+
+  getTransformMatrix() {
+    if (this.parent == null) return this.modelMatrix;
+    return mult(this.parent.getTransformMatrix(), this.modelMatrix);
+  }
+
+  setParent(parentObject) {
+    this.parent = parentObject;
+  }
+
   setModelMatrix() {
     this.modelMatrix = mult(
       this.translateMatrix,
@@ -157,8 +171,16 @@ class Object3D {
       gl.bufferData(gl.ARRAY_BUFFER, flatten(this.texture.uv), gl.STATIC_DRAW);
     }
   }
-  draw(gl, aLocs, uLocs, context) {
-    gl.uniformMatrix4fv(uLocs.mm, false, flatten(this.modelMatrix));
+  draw(gl, aLocs, uLocs, context, animationMethod) {
+    if (this.animationEnabled) {
+      animationMethod(this, context, this.frameCount);
+    }
+
+    if (this.parent != null) {
+      gl.uniformMatrix4fv(uLocs.mm, false, flatten(this.getTransformMatrix()));
+    } else {
+      gl.uniformMatrix4fv(uLocs.mm, false, flatten(this.modelMatrix));
+    }
 
     gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.v);
     gl.vertexAttribPointer(aLocs.v, 4, gl.FLOAT, false, 0, 0);
@@ -189,6 +211,8 @@ class Object3D {
     context.linkDrawingTexture();
 
     gl.drawArrays(gl.TRIANGLES, 0, this.vertices.length);
+
+    this.frameCount++;
   }
 }
 
@@ -206,7 +230,8 @@ class ProgramContext {
     this.street;
 
     this.projectionMatrix;
-    this.lightPosition = [0, 3, -5, 1];
+    this.lightPosition = [0, 3, 0, 1];
+
     //attribute locations
     this.aLoc = {
       v: null,

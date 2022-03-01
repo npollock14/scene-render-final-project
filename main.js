@@ -58,7 +58,13 @@ function render() {
 
   //DRAW SCENE OBJECTS
   //draw car
-  context.car.draw(context.gl, context.aLoc, context.uLoc, context);
+  context.car.draw(
+    context.gl,
+    context.aLoc,
+    context.uLoc,
+    context,
+    carAnimation
+  );
 
   //draw bunny
   context.bunny.draw(context.gl, context.aLoc, context.uLoc, context);
@@ -73,6 +79,11 @@ function render() {
   context.stopSign.draw(context.gl, context.aLoc, context.uLoc, context);
 
   requestAnimationFrame(render);
+}
+
+function carAnimation(car, context, frameCount) {
+  let rotateSpeed = -0.5;
+  car.modelMatrix = mult(rotateY(rotateSpeed), car.modelMatrix);
 }
 
 async function loadData() {
@@ -91,9 +102,10 @@ async function loadData() {
   let car = new Object3D(faceVertices, faceNormals, diffuse, specular);
   car.initBuffers(context.gl);
   car.setBuffers(context.gl);
-  car.move(2, -0.2, -7.2);
-  car.move(0, 1, 5);
-  //car.rotateY(45);
+  car.move(3, -0.2, 0);
+
+  //car.move(0, 1, 5);
+  car.rotateY(0);
   context.car = car;
 
   console.log("car LOADED");
@@ -114,7 +126,7 @@ async function loadData() {
   bunny.initBuffers(context.gl);
   bunny.setBuffers(context.gl);
   context.bunny = bunny;
-  context.bunny.move(0.5, 0, -3);
+  context.bunny.move(0, 0.7, 1.5);
   console.log("bunny LOADED");
 
   resetConstants();
@@ -132,7 +144,7 @@ async function loadData() {
   lamp.initBuffers(context.gl);
   lamp.setBuffers(context.gl);
   context.lamp = lamp;
-  context.lamp.move(0, 0, -5);
+  context.lamp.move(0, 0, 0);
   //move the context.light to the lamp's position plus an offset of (0,3,0)
   // context.setLightPosition(0, 3, 0);
 
@@ -153,7 +165,7 @@ async function loadData() {
   street.initBuffers(context.gl);
   street.setBuffers(context.gl);
   context.street = street;
-  context.street.move(0, 0, -5);
+  context.street.move(0, 0, 0);
   console.log("street LOADED");
 
   resetConstants();
@@ -172,11 +184,15 @@ async function loadData() {
   stopSign.initBuffers(context.gl);
   stopSign.setBuffers(context.gl);
   context.stopSign = stopSign;
-  context.stopSign.move(4.5, 0, -7);
+  context.stopSign.move(4.5, 0, -2);
   context.stopSign.rotateY(-90);
   console.log("stop sign LOADED");
 
   console.log("DONE LOADING");
+
+  context.bunny.setParent(context.car);
+  context.car.animationEnabled = true;
+
   render(context);
 }
 

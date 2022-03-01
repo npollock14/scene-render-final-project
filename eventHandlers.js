@@ -12,6 +12,7 @@ const keyMap = {
   ArrowRight: moveLight.bind(null, 0.1, 0, 0),
   ",": moveLight.bind(null, 0, 0, 0.1),
   ".": moveLight.bind(null, 0, 0, -0.1),
+  m: toggleCarAnimation,
 };
 
 let mouseDown = false;
@@ -59,4 +60,7 @@ function moveLight(x, y, z) {
   context.lightPosition[2] += z;
   console.log(context.lightPosition);
   context.linkLightPosition();
+}
+function toggleCarAnimation() {
+  context.car.animationEnabled = !context.car.animationEnabled;
 }
