@@ -1,10 +1,10 @@
 const keyMap = {
-  w: translateCamera.bind(null, 0, 0, -0.1),
-  s: translateCamera.bind(null, 0, 0, 0.1),
-  a: translateCamera.bind(null, -0.1, 0, 0),
-  d: translateCamera.bind(null, 0.1, 0, 0),
-  " ": translateCamera.bind(null, 0, 0.1, 0),
-  Control: translateCamera.bind(null, 0, -0.1, 0),
+  w: translateCamera.bind(null, 0, 0, -0.2),
+  s: translateCamera.bind(null, 0, 0, 0.2),
+  a: translateCamera.bind(null, -0.2, 0, 0),
+  d: translateCamera.bind(null, 0.2, 0, 0),
+  " ": translateCamera.bind(null, 0, 0.2, 0),
+  Control: translateCamera.bind(null, 0, -0.2, 0),
   l: toggleLight,
   ArrowUp: moveLight.bind(null, 0, 0.1, 0),
   ArrowDown: moveLight.bind(null, 0, -0.1, 0),
@@ -21,6 +21,7 @@ let mouseDown = false;
 function toggleCamera() {
   context.activeCam = (context.activeCam + 1) % context.cameras.length;
   context.linkCameraMatrix();
+  console.log(context.activeCam);
 }
 
 function handleKeyDown(e) {

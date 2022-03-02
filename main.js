@@ -33,6 +33,9 @@ function main() {
     100
   );
 
+  context.cameras.push(new Camera(0, 4, 10));
+  context.cameras.push(new Camera(-1, 0.5, -1));
+
   context.linkProjectionMatrix();
   context.linkCameraMatrix();
   context.linkLightPosition();
@@ -40,8 +43,8 @@ function main() {
 
   //enable depth testing and back-face culling
   context.gl.enable(context.gl.DEPTH_TEST);
-  // context.gl.enable(context.gl.CULL_FACE);
-  // context.gl.cullFace(context.gl.BACK);
+  context.gl.enable(context.gl.CULL_FACE);
+  context.gl.cullFace(context.gl.BACK);
 
   //link event handlers
   document.onkeydown = (e) => {
@@ -56,6 +59,13 @@ function main() {
 function render() {
   context.clearCanvas();
 
+  if (context.cameras[context.activeCam].parent != null) {
+    context.cameras[context.activeCam].setRelToObject(
+      context.cameras[context.activeCam].parent
+    );
+    context.linkCameraMatrix();
+  }
+
   //DRAW SCENE OBJECTS
   if (context.carAnimationEnabled) {
     context.carAnimator.rotateY(-0.5);
@@ -63,10 +73,10 @@ function render() {
   //draw car
   context.car.draw(context.gl, context.aLoc, context.uLoc, context);
   // console.log(context.car.getWorldPosition());
-  let carPos = context.car.getWorldPosition();
-  context.cameras[0].setPosition(carPos[0], carPos[1], carPos[2] + 0.5);
-  let bunnyPos = context.bunny.getWorldPosition();
-  context.cameras[0].setAt(bunnyPos[0], bunnyPos[1], bunnyPos[2]);
+  // let carPos = context.car.getWorldPosition();
+  // context.cameras[0].setPosition(carPos[0], carPos[1], carPos[2] + 0.5);
+  // let bunnyPos = context.bunny.getWorldPosition();
+  // context.cameras[0].setAt(bunnyPos[0], bunnyPos[1], bunnyPos[2]);
 
   //draw bunny
   context.bunny.draw(context.gl, context.aLoc, context.uLoc, context);
@@ -201,7 +211,7 @@ async function loadData() {
   context.carAnimator = carAnimator;
   context.car.setParent(context.carAnimator);
 
-  context.cameras[1].setParent(context.car);
+  context.cameras[1].setParent(context.bunny);
 
   render(context);
 }

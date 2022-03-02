@@ -1,39 +1,56 @@
 class Camera {
   constructor(x = 1, y = 4, z = 8) {
-    const initPos = [x, y, z];
+    this.initPos = [x, y, z];
     this.eyeRel = [x, y, z];
-    this.eyeActual = [];
     this.at = [0, 0, 0];
     this.up = [0, 1, 0];
     this.rotation = 0;
 
     this.parent = null;
 
-    //if eyeRel matches atRel, subtract 1 from atRel's z to avoid divide by zero
-    if (
-      this.eyeRel[0] == this.at[0] &&
-      this.eyeRel[1] == this.at[1] &&
-      this.eyeRel[2] == this.at[2]
-    ) {
-      this.at[2] -= 1;
-      //warn  user
-      console.warn("Eye and at were the same. Subtracted 1 from at's z.");
-    }
     this.matrixRel = lookAt(this.eyeRel, this.at, this.up);
   }
+  getTransformMatrix() {
+    if (this.parent != null) {
+      return mult(this.parent.getTransformMatrix(), this.matrixRel);
+    } else {
+      return this.matrixRel;
+    }
+  }
+  getWorldPosition() {
+    let resPos = mult(this.getTransformMatrix(), vec4(0, 0, 0, 1));
+    return [resPos[0], resPos[1], resPos[2]];
+  }
   resetCameraPos() {
-    this.eyeRel = initPos;
+    this.eyeRel = this.initPos;
   }
   setParent(object) {
     this.parent = object;
   }
 
+  getActualEye() {
+    if (this.parent != null) {
+      let eyePos = mult(
+        this.parent.getTransformMatrix(),
+        vec4(this.eyeRel[0], this.eyeRel[1], this.eyeRel[2], 1)
+      );
+      return [eyePos[0], eyePos[1], eyePos[2]];
+    } else {
+      return this.eyeRel;
+    }
+  }
+
+  setRelToObject(object) {
+    let worldPos = object.getWorldPosition();
+
+    this.at = [worldPos[0], worldPos[1], worldPos[2]];
+    this.up = [0, 1, 0];
+    this.matrixRel = lookAt(this.getActualEye(), this.at, this.up);
+  }
+
   setPosition(x, y, z) {
     this.eyeRel = [x, y, z];
     this.matrixRel = lookAt(this.eyeRel, this.at, this.up);
-  }
-  setRotationY(degrees) {
-    //set AT to a rotation about the cameras position
   }
   addVector(x, y, z) {
     this.eyeRel[0] += x;
@@ -96,7 +113,7 @@ class Object3D {
   getWorldPosition() {
     let transMatrix = this.getTransformMatrix();
     let worldPos = mult(transMatrix, vec4(0, 0, 0, 1));
-    return worldPos;
+    return [worldPos[0], worldPos[1], worldPos[2]];
   }
 
   setParent(parentObject) {
@@ -206,14 +223,7 @@ class Object3D {
 
   //OBJECT DRAW CALL
   draw(gl, aLocs, uLocs, context) {
-    let resultantModelMatrix = this.modelMatrix;
-    let activeCam = context.cameras[context.activeCam];
-
-    if (this.parent != null) {
-      resultantModelMatrix = this.getTransformMatrix();
-    }
-
-    context.linkCameraMatrix();
+    let resultantModelMatrix = this.getTransformMatrix();
 
     gl.uniformMatrix4fv(uLocs.mm, false, flatten(resultantModelMatrix));
 
@@ -256,8 +266,8 @@ class ProgramContext {
     this.canvas;
     this.gl;
     this.program;
-    this.activeCam = 1;
-    this.cameras = [new Camera(0, 4, -10), new Camera()];
+    this.activeCam = 0;
+    this.cameras = [];
 
     //Scene objects
     this.car;
@@ -340,11 +350,21 @@ class ProgramContext {
     this.gl.uniform4fv(this.uLoc.lightPosition, flatten(this.lightPosition));
   }
   linkCameraMatrix() {
-    let camMatrix = this.cameras[this.activeCam].matrixRel;
-    let camEyePos = this.cameras[this.activeCam].eyeRel;
+    let activeCam = this.cameras[this.activeCam];
 
-    this.gl.uniformMatrix4fv(this.uLoc.cm, false, flatten(camMatrix));
-    this.gl.uniform3fv(this.uLoc.camPosition, flatten(camEyePos));
+    // let camMatrix = activeCam.getTransformMatrix();
+    // let camEyePos = activeCam.getWorldPosition();
+
+    // let eye = vec3(camEyePos[0], camEyePos[1], camEyePos[2]);
+    // let at = vec3(0, 0, 0);
+    // let up = vec3(0, 1, 0);
+    // let lookMatrix = lookAt(eye, at, up);
+
+    this.gl.uniformMatrix4fv(this.uLoc.cm, false, flatten(activeCam.matrixRel));
+    this.gl.uniform3fv(
+      this.uLoc.camPosition,
+      flatten(activeCam.getActualEye())
+    );
   }
   toggleLighting() {
     this.shaderFlags.lightingEnabled = !this.shaderFlags.lightingEnabled;
