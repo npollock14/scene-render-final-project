@@ -7,6 +7,8 @@ class Camera {
     this.up = [0, 1, 0];
     this.rotation = 0;
 
+    this.parent = null;
+
     //if eyeRel matches atRel, subtract 1 from atRel's z to avoid divide by zero
     if (
       this.eyeRel[0] == this.at[0] &&
@@ -21,6 +23,9 @@ class Camera {
   }
   resetCameraPos() {
     this.eyeRel = initPos;
+  }
+  setParent(object) {
+    this.parent = object;
   }
 
   setPosition(x, y, z) {
@@ -79,12 +84,19 @@ class Object3D {
       uv: [],
     };
     this.frameCount = 0;
-    this.animationEnabled = false;
+
+    this.worldPosition = null;
   }
 
   getTransformMatrix() {
     if (this.parent == null) return this.modelMatrix;
     return mult(this.parent.getTransformMatrix(), this.modelMatrix);
+  }
+
+  getWorldPosition() {
+    let transMatrix = this.getTransformMatrix();
+    let worldPos = mult(transMatrix, vec4(0, 0, 0, 1));
+    return worldPos;
   }
 
   setParent(parentObject) {
@@ -193,16 +205,15 @@ class Object3D {
   }
 
   //OBJECT DRAW CALL
-  draw(gl, aLocs, uLocs, context, animationMethod) {
-    if (this.animationEnabled) {
-      this.modelMatrix = animationMethod(this, context, this.frameCount);
-    }
-
+  draw(gl, aLocs, uLocs, context) {
     let resultantModelMatrix = this.modelMatrix;
+    let activeCam = context.cameras[context.activeCam];
 
     if (this.parent != null) {
       resultantModelMatrix = this.getTransformMatrix();
     }
+
+    context.linkCameraMatrix();
 
     gl.uniformMatrix4fv(uLocs.mm, false, flatten(resultantModelMatrix));
 
@@ -250,9 +261,12 @@ class ProgramContext {
 
     //Scene objects
     this.car;
+    this.carAnimator;
     this.bunny;
     this.lamp;
     this.street;
+
+    this.carAnimationEnabled = true;
 
     this.projectionMatrix;
     this.lightPosition = [0, 3, 0, 1];
@@ -328,6 +342,7 @@ class ProgramContext {
   linkCameraMatrix() {
     let camMatrix = this.cameras[this.activeCam].matrixRel;
     let camEyePos = this.cameras[this.activeCam].eyeRel;
+
     this.gl.uniformMatrix4fv(this.uLoc.cm, false, flatten(camMatrix));
     this.gl.uniform3fv(this.uLoc.camPosition, flatten(camEyePos));
   }

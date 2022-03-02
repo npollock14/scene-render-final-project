@@ -40,8 +40,8 @@ function main() {
 
   //enable depth testing and back-face culling
   context.gl.enable(context.gl.DEPTH_TEST);
-  context.gl.enable(context.gl.CULL_FACE);
-  context.gl.cullFace(context.gl.BACK);
+  // context.gl.enable(context.gl.CULL_FACE);
+  // context.gl.cullFace(context.gl.BACK);
 
   //link event handlers
   document.onkeydown = (e) => {
@@ -57,14 +57,16 @@ function render() {
   context.clearCanvas();
 
   //DRAW SCENE OBJECTS
+  if (context.carAnimationEnabled) {
+    context.carAnimator.rotateY(-0.5);
+  }
   //draw car
-  context.car.draw(
-    context.gl,
-    context.aLoc,
-    context.uLoc,
-    context,
-    carAnimation
-  );
+  context.car.draw(context.gl, context.aLoc, context.uLoc, context);
+  // console.log(context.car.getWorldPosition());
+  let carPos = context.car.getWorldPosition();
+  context.cameras[0].setPosition(carPos[0], carPos[1], carPos[2] + 0.5);
+  let bunnyPos = context.bunny.getWorldPosition();
+  context.cameras[0].setAt(bunnyPos[0], bunnyPos[1], bunnyPos[2]);
 
   //draw bunny
   context.bunny.draw(context.gl, context.aLoc, context.uLoc, context);
@@ -82,12 +84,12 @@ function render() {
 }
 
 //redo this using move and rotate
-function carAnimation(car, context, frameCount) {
-  let rotateSpeed = -0.5;
-  return mult(rotateY(rotateSpeed), car.modelMatrix);
-  // car.move(0, 0, 0.01);
-  // car.rotateY(rotateSpeed);
-}
+// function carAnimation(car, context, frameCount) {
+//   let rotateSpeed = -0.5;
+//   return rotateY(rotateSpeed);
+//   // car.move(0, 0, 0.01);
+//   // car.rotateY(rotateSpeed);
+// }
 
 async function loadData() {
   console.log("LOADING DATA");
@@ -195,7 +197,11 @@ async function loadData() {
   console.log("DONE LOADING");
 
   context.bunny.setParent(context.car);
-  context.car.animationEnabled = true;
+  let carAnimator = new Object3D();
+  context.carAnimator = carAnimator;
+  context.car.setParent(context.carAnimator);
+
+  context.cameras[1].setParent(context.car);
 
   render(context);
 }

@@ -48,5 +48,5 @@ function moveLight(x, y, z) {
   context.linkLightPosition();
 }
 function toggleCarAnimation() {
-  context.car.animationEnabled = !context.car.animationEnabled;
+  context.carAnimationEnabled = !context.carAnimationEnabled;
 }
