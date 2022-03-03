@@ -61,7 +61,7 @@ function render() {
 
   //DRAW SCENE OBJECTS
   if (context.carAnimationEnabled) {
-    context.carAnimator.rotateY(-0.5);
+    context.carAnimator.rotateY(-0.75);
   }
 
   if (context.cameras[context.activeCam].parent != null) {
@@ -72,16 +72,16 @@ function render() {
   }
 
   //draw car
-  // context.car.draw(context.gl, context.aLoc, context.uLoc, context);
+  context.car.draw(context.gl, context.aLoc, context.uLoc, context);
 
   // //draw bunny
-  // context.bunny.draw(context.gl, context.aLoc, context.uLoc, context);
+  context.bunny.draw(context.gl, context.aLoc, context.uLoc, context);
 
   // //draw lamp
-  // context.lamp.draw(context.gl, context.aLoc, context.uLoc, context);
+  context.lamp.draw(context.gl, context.aLoc, context.uLoc, context);
 
   // //draw street
-  // context.street.draw(context.gl, context.aLoc, context.uLoc, context);
+  context.street.draw(context.gl, context.aLoc, context.uLoc, context);
 
   // //draw stop sign
   context.stopSign.draw(context.gl, context.aLoc, context.uLoc, context);
@@ -114,7 +114,7 @@ async function loadData() {
   );
 
   let car = new Object3D(faceVertices, faceNormals, diffuse, specular);
-  car.initBuffers(context.gl);
+  car.initBuffers(context.gl, context);
   car.setBuffers(context.gl);
   car.move(3, -0.2, 0);
 
@@ -137,7 +137,7 @@ async function loadData() {
   );
 
   let bunny = new Object3D(faceVertices, faceNormals, diffuse, specular);
-  bunny.initBuffers(context.gl);
+  bunny.initBuffers(context.gl, context);
   bunny.setBuffers(context.gl);
   context.bunny = bunny;
   context.bunny.move(0, 0.7, 1.5);
@@ -156,7 +156,7 @@ async function loadData() {
     "OBJ"
   );
   let lamp = new Object3D(faceVertices, faceNormals, diffuse, specular);
-  lamp.initBuffers(context.gl);
+  lamp.initBuffers(context.gl, context);
   lamp.setBuffers(context.gl);
   context.lamp = lamp;
   context.lamp.move(0, 0, 0);
@@ -177,7 +177,7 @@ async function loadData() {
     "OBJ"
   );
   let street = new Object3D(faceVertices, faceNormals, diffuse, specular);
-  street.initBuffers(context.gl);
+  street.initBuffers(context.gl, context);
   street.setBuffers(context.gl);
   context.street = street;
   context.street.move(0, 0, 0);
@@ -185,21 +185,7 @@ async function loadData() {
 
   resetConstants();
 
-  //load the skybox
-  genCube();
-  let skybox = new Object3D(faceVertices, null, null, null);
-  let skyTex = await getTextureFromURL(
-    "https://web.cs.wpi.edu/~jmcuneo/cs4731/project3_1/skybox_negx.png"
-  );
-  skybox.addTexture(skyTex, faceUVs, context.gl, context.program, context);
-  skybox.initBuffers(context.gl);
-  skybox.setBuffers(context.gl);
-  skybox.scale(10, 10, 10);
-  context.skybox = skybox;
-
-  console.log("skybox loaded");
-
-  resetConstants();
+  
 
   // load the stop sign
   await loadFile(
@@ -218,12 +204,43 @@ async function loadData() {
     context.program,
     context
   );
-  stopSign.initBuffers(context.gl);
+  stopSign.initBuffers(context.gl,context);
   stopSign.setBuffers(context.gl);
   context.stopSign = stopSign;
   context.stopSign.move(4.5, 0, -2);
   context.stopSign.rotateY(-90);
   console.log("stop sign LOADED");
+
+  let cubeMapImages = [];
+  let image = await getTextureFromURL("https://web.cs.wpi.edu/~jmcuneo/cs4731/project3_1/skybox_posx.png");
+  cubeMapImages.push(image);
+  image = await getTextureFromURL("https://web.cs.wpi.edu/~jmcuneo/cs4731/project3_1/skybox_negx.png");
+  cubeMapImages.push(image);
+  image = await getTextureFromURL("https://web.cs.wpi.edu/~jmcuneo/cs4731/project3_1/skybox_posy.png");
+  cubeMapImages.push(image);
+  image = await getTextureFromURL("https://web.cs.wpi.edu/~jmcuneo/cs4731/project3_1/skybox_negy.png");
+  cubeMapImages.push(image);
+  image = await getTextureFromURL("https://web.cs.wpi.edu/~jmcuneo/cs4731/project3_1/skybox_posz.png");
+  cubeMapImages.push(image);
+  image = await getTextureFromURL("https://web.cs.wpi.edu/~jmcuneo/cs4731/project3_1/skybox_negz.png");
+  cubeMapImages.push(image);
+  context.setCubeMap(cubeMapImages);
+
+  //load the skybox
+  // genCube();
+  // let skybox = new Object3D(faceVertices, null, null, null);
+  // let skyTex = await getTextureFromURL(
+  //   "https://web.cs.wpi.edu/~jmcuneo/cs4731/project3_1/skybox_negx.png"
+  // );
+  // skybox.addTexture(skyTex, faceUVs, context.gl, context.program, context);
+  // skybox.initBuffers(context.gl,context);
+  // skybox.setBuffers(context.gl);
+  // skybox.scale(10, 10, 10);
+  // context.skybox = skybox;
+
+  // console.log("skybox loaded");
+
+  resetConstants();
 
   console.log("DONE LOADING");
 

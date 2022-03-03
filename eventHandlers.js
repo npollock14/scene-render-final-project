@@ -15,6 +15,8 @@ const keyMap = {
   m: toggleCarAnimation,
   c: toggleCamera,
   o: toggleShadows,
+  r: toggleReflections,
+  f: toggleRefractions
 };
 
 let mouseDown = false;
@@ -23,6 +25,16 @@ function toggleCamera() {
   context.activeCam = (context.activeCam + 1) % context.cameras.length;
   context.linkCameraMatrix();
   console.log(context.activeCam);
+}
+
+function toggleRefractions(){
+  context.shaderFlags.refractionsEnabled = !context.shaderFlags.refractionsEnabled;
+  context.linkRefractionToggle();
+}
+
+function toggleReflections(){
+  context.shaderFlags.reflectionsEnabled = !context.shaderFlags.reflectionsEnabled;
+  context.linkReflectionToggle();
 }
 
 function handleKeyDown(e) {

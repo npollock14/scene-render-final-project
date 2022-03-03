@@ -106,6 +106,7 @@ class Object3D {
     this.worldPosition = null;
 
     this.drawShadows = false;
+    this.objectNumber = null;
   }
 
   getTransformMatrix() {
@@ -169,7 +170,7 @@ class Object3D {
     this.setModelMatrix();
   }
 
-  initBuffers(gl) {
+  initBuffers(gl,context) {
     this.buffers.v = gl.createBuffer();
     this.buffers.n = gl.createBuffer();
     this.buffers.diffuse = gl.createBuffer();
@@ -177,6 +178,8 @@ class Object3D {
     if (this.hasTexture) {
       this.buffers.uv = gl.createBuffer();
     }
+    this.objectNumber = context.totalObjects;
+    context.totalObjects++;
   }
 
   addTexture(image, uvs, gl, program, context) {
@@ -254,6 +257,10 @@ class Object3D {
     gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.specular);
     gl.enableVertexAttribArray(aLocs.specular);
     gl.vertexAttribPointer(aLocs.specular, 4, gl.FLOAT, false, 0, 0);
+
+    //set the current object shader flag
+    context.shaderFlags.currObject = this.objectNumber;
+    context.setCurrObjectFlag();
 
     if (this.hasTexture) {
       //push the texture to the shader
@@ -335,18 +342,56 @@ class ProgramContext {
       drawingTexture: null,
       camPosition: null,
       shadowMatrix: null,
+      currObject: null,
+      reflectionsEnabled: null,
+      refractionsEnabled: null,
     };
     this.activeTextures = 0;
     this.shaderFlags = {
       lightingEnabled: true,
       drawingTexture: false,
       drawingShadow: true,
+      currObject: null,
+      reflectionsEnabled: false,
+      refractionsEnabled: false,
     };
     this.shadowMatrix = mat4();
     this.shadowMatrix[3][3] = 0;
     this.shadowMatrix[3][1] = -1 / this.lightPosition[1];
+
+    this.cubeMap;
+    this.totalObjects = 0;
   }
 
+  setCurrObjectFlag(){
+    this.gl.uniform1f(
+      this.uLoc.currObject,
+      this.shaderFlags.currObject
+    );
+  }
+
+  setCubeMap(images){
+    let gl = this.gl;
+    let program = this.program;
+    this.cubeMap = gl.createTexture();
+    gl.activeTexture(gl.TEXTURE31);
+    gl.bindTexture(gl.TEXTURE_CUBE_MAP, this.cubeMap);
+
+    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+
+    gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, images[0]);
+    gl.texImage2D(gl.TEXTURE_CUBE_MAP_NEGATIVE_X, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, images[1]);
+    gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_Y, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, images[2]);
+    gl.texImage2D(gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, images[3]);
+    gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_Z, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, images[4]);
+    gl.texImage2D(gl.TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, images[5]);
+
+    gl.uniform1i(gl.getUniformLocation(program, "texMap"), 31);
+  }
   clearCanvas() {
     let gl = this.gl;
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -363,6 +408,14 @@ class ProgramContext {
     this.uLoc.mm = this.gl.getUniformLocation(this.program, "modelMatrix");
     this.uLoc.pm = this.gl.getUniformLocation(this.program, "projectionMatrix");
     this.uLoc.cm = this.gl.getUniformLocation(this.program, "cameraMatrix");
+    this.uLoc.refractionsEnabled = this.gl.getUniformLocation(this.program, "refractionsEnabled");
+    this.uLoc.reflectionsEnabled = this.gl.getUniformLocation(this.program, "reflectionsEnabled");
+
+    this.uLoc.currObject = this.gl.getUniformLocation(
+      this.program,
+      "currObject"
+    );
+
     this.uLoc.shadowMatrix = this.gl.getUniformLocation(
       this.program,
       "shadowMatrix"
@@ -389,7 +442,7 @@ class ProgramContext {
       "cameraPosition"
     );
     //give drawingTexture a default value of 0.0
-    this.gl.uniform1f(this.uLoc.drawingTexture, 0.0);
+    this.gl.uniform1f(this.uLoc.drawingTexture, 1.0);
   }
   linkProjectionMatrix() {
     this.gl.uniformMatrix4fv(
@@ -421,6 +474,20 @@ class ProgramContext {
     this.gl.uniform1f(
       this.uLoc.lightingEnabled,
       this.shaderFlags.lightingEnabled ? 1.0 : 0.0
+    );
+  }
+
+  linkReflectionToggle(){
+    this.gl.uniform1f(
+      this.uLoc.reflectionsEnabled,
+      this.shaderFlags.reflectionsEnabled ? 1.0 : 0.0
+    );
+  }
+
+  linkRefractionToggle(){
+    this.gl.uniform1f(
+      this.uLoc.refractionsEnabled,
+      this.shaderFlags.refractionsEnabled ? 1.0 : 0.0
     );
   }
 

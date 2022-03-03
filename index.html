@@ -25,10 +25,14 @@
       uniform mat4 shadowMatrix;
 
 
+
       uniform float drawingShadow;
       uniform float lightingEnabled;
+      uniform float currObject;
 
-      varying vec3 L, N, V;
+      varying float vCurrObject;
+
+      varying vec3 L, N, V, vReflections, vRefractions;
 
       varying vec4 vDiffuseColor;
       varying vec4 vSpecularColor;
@@ -40,6 +44,7 @@
       varying vec2 vTexCoord;
 
       void main() {
+        vCurrObject = currObject;
         vDrawingShadow = drawingShadow;
           vLightingEnabled = lightingEnabled;
           vTexCoord = texCoord;
@@ -54,6 +59,8 @@
           L = normalize((lightPosition).xyz - pos);
           N = normalize(modelMatrix * vNormal).xyz;
           V = normalize(cameraPosition.xyz - pos); //vector to camera
+          vRefractions = refract(pos, N, 0.95);
+          vReflections = reflect(pos, N);
 
 
           gl_Position = projectionMatrix * cameraMatrix * modelMatrix * vPosition;
@@ -67,15 +74,20 @@
 
       varying vec4 vDiffuseColor;
       varying vec4 vSpecularColor;
-      varying vec3 L, N, V;
+      varying vec3 L, N, V, vReflections, vRefractions;
       varying float vLightingEnabled;
       varying float vDrawingShadow;
+      varying float vCurrObject;
 
 
       varying vec2 vTexCoord;
       uniform sampler2D texture;
+      uniform samplerCube texMap;
+
 
       uniform float drawingTexture;
+
+      uniform float reflectionsEnabled, refractionsEnabled;
 
       void main() {
 
@@ -90,11 +102,16 @@
 
           vec4 specular = vSpecularColor * pow(max(dot(V, R), 0.0), 20.0);
           vec4 ambient = .3 * vDiffuseColor;
-
           fColor = ambient + ((vLightingEnabled > .5) ? (diffuse + specular) : vec4(0.0, 0.0, 0.0, 0.0));
-          //fColor = diffuse;
-          //fColor = specular;
-
+          if(refractionsEnabled > 0.5 && vCurrObject > .5 && vCurrObject < 1.5){
+            vec4 texColor = textureCube(texMap, vRefractions);
+            fColor = texColor;
+          }
+          if(reflectionsEnabled > 0.5 && vCurrObject < .5){
+            vec4 texColor = textureCube(texMap, vReflections);
+            fColor = texColor + fColor;
+          }
+      
           fColor.a = 1.0;
           gl_FragColor = fColor;
 
