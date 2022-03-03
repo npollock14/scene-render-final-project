@@ -89,6 +89,7 @@ class Object3D {
       diffuse: diffuse,
       specular: specular,
       uv: null,
+      tex: null,
     };
 
     this.diffuse = diffuse;
@@ -99,6 +100,7 @@ class Object3D {
     this.texture = {
       image: null,
       uv: [],
+      textureNumber: null,
     };
     this.frameCount = 0;
     this.worldPosition = null;
@@ -177,14 +179,15 @@ class Object3D {
     }
   }
 
-  addTexture(image, uvs, gl, program) {
+  addTexture(image, uvs, gl, program, context) {
+    this.buffers.tex = gl.createTexture();
     this.hasTexture = true;
     this.texture.image = image;
     this.texture.uv = uvs;
+    this.texture.textureNumber = context.activeTextures;
 
-    var tex = gl.createTexture();
-    gl.activeTexture(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D, tex);
+    gl.activeTexture(gl.TEXTURE0 + context.activeTextures);
+    gl.bindTexture(gl.TEXTURE_2D, this.buffers.tex);
 
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
@@ -201,20 +204,28 @@ class Object3D {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
 
-    gl.uniform1i(gl.getUniformLocation(program, "texture"), 0);
+    context.activeTextures++;
   }
+
   setBuffers(gl) {
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.v);
-    gl.bufferData(gl.ARRAY_BUFFER, flatten(this.vertices), gl.STATIC_DRAW);
+    if (this.vertices) {
+      gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.v);
+      gl.bufferData(gl.ARRAY_BUFFER, flatten(this.vertices), gl.STATIC_DRAW);
+    }
+    if (this.normals) {
+      gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.n);
+      gl.bufferData(gl.ARRAY_BUFFER, flatten(this.normals), gl.STATIC_DRAW);
+    }
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.n);
-    gl.bufferData(gl.ARRAY_BUFFER, flatten(this.normals), gl.STATIC_DRAW);
+    if (this.diffuse) {
+      gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.diffuse);
+      gl.bufferData(gl.ARRAY_BUFFER, flatten(this.diffuse), gl.STATIC_DRAW);
+    }
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.diffuse);
-    gl.bufferData(gl.ARRAY_BUFFER, flatten(this.diffuse), gl.STATIC_DRAW);
-
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.specular);
-    gl.bufferData(gl.ARRAY_BUFFER, flatten(this.specular), gl.STATIC_DRAW);
+    if (this.specular) {
+      gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.specular);
+      gl.bufferData(gl.ARRAY_BUFFER, flatten(this.specular), gl.STATIC_DRAW);
+    }
 
     if (this.hasTexture) {
       gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.uv);
@@ -222,7 +233,7 @@ class Object3D {
     }
   }
 
-  //OBJECT DRAW CALL
+  //MAIN-DRAW
   draw(gl, aLocs, uLocs, context) {
     let resultantModelMatrix = this.getTransformMatrix();
 
@@ -245,6 +256,16 @@ class Object3D {
     gl.vertexAttribPointer(aLocs.specular, 4, gl.FLOAT, false, 0, 0);
 
     if (this.hasTexture) {
+      //push the texture to the shader
+      // console.log("drawing texture" + this.texture.textureNumber);
+      gl.activeTexture(gl.TEXTURE0 + this.texture.textureNumber);
+      gl.bindTexture(gl.TEXTURE_2D, this.buffers.tex);
+      gl.uniform1i(
+        gl.getUniformLocation(context.program, "texture"),
+        this.textureNumber
+      );
+      //push the uv coordinates to the shader
+
       gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.uv);
       gl.enableVertexAttribArray(aLocs.uv);
       gl.vertexAttribPointer(aLocs.uv, 2, gl.FLOAT, false, 0, 0);
@@ -256,16 +277,18 @@ class Object3D {
 
     context.linkDrawingTexture();
 
-    if(context.shaderFlags.drawingShadow && this.drawShadows && context.shaderFlags.lightingEnabled){
+    if (
+      context.shaderFlags.drawingShadow &&
+      this.drawShadows &&
+      context.shaderFlags.lightingEnabled
+    ) {
       context.setShadowFlag(1.0);
       context.linkShadowMatrix(context.getShadowMatrix());
-    gl.drawArrays(gl.TRIANGLES, 0, this.vertices.length);
+      gl.drawArrays(gl.TRIANGLES, 0, this.vertices.length);
     }
 
     context.setShadowFlag(0.0);
     gl.drawArrays(gl.TRIANGLES, 0, this.vertices.length);
-
-   
 
     this.frameCount++;
   }
@@ -311,8 +334,9 @@ class ProgramContext {
       drawingShadow: null,
       drawingTexture: null,
       camPosition: null,
-      shadowMatrix:null,
+      shadowMatrix: null,
     };
+    this.activeTextures = 0;
     this.shaderFlags = {
       lightingEnabled: true,
       drawingTexture: false,
@@ -320,8 +344,9 @@ class ProgramContext {
     };
     this.shadowMatrix = mat4();
     this.shadowMatrix[3][3] = 0;
-    this.shadowMatrix[3][1] = -1/this.lightPosition[1];
+    this.shadowMatrix[3][1] = -1 / this.lightPosition[1];
   }
+
   clearCanvas() {
     let gl = this.gl;
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -338,7 +363,10 @@ class ProgramContext {
     this.uLoc.mm = this.gl.getUniformLocation(this.program, "modelMatrix");
     this.uLoc.pm = this.gl.getUniformLocation(this.program, "projectionMatrix");
     this.uLoc.cm = this.gl.getUniformLocation(this.program, "cameraMatrix");
-    this.uLoc.shadowMatrix = this.gl.getUniformLocation(this.program, "shadowMatrix");
+    this.uLoc.shadowMatrix = this.gl.getUniformLocation(
+      this.program,
+      "shadowMatrix"
+    );
     this.uLoc.lightPosition = this.gl.getUniformLocation(
       this.program,
       "lightPosition"
@@ -371,12 +399,10 @@ class ProgramContext {
     );
   }
 
-  
-  
   linkLightPosition() {
     this.gl.uniform4fv(this.uLoc.lightPosition, flatten(this.lightPosition));
     //update the shadow matrix
-    this.shadowMatrix[3][1] = -1/this.lightPosition[1];
+    this.shadowMatrix[3][1] = -1 / this.lightPosition[1];
   }
   linkCameraMatrix() {
     let activeCam = this.cameras[this.activeCam];
@@ -398,26 +424,38 @@ class ProgramContext {
     );
   }
 
-  toggleShadows(){
+  toggleShadows() {
     this.shaderFlags.drawingShadow = !this.shaderFlags.drawingShadow;
   }
 
-  getShadowMatrix(){
-    let resultantMatrix = translate(this.lightPosition[0], this.lightPosition[1], this.lightPosition[2]);
+  getShadowMatrix() {
+    let resultantMatrix = translate(
+      this.lightPosition[0],
+      this.lightPosition[1],
+      this.lightPosition[2]
+    );
     resultantMatrix = mult(resultantMatrix, this.shadowMatrix);
-    resultantMatrix = mult(resultantMatrix, translate(-this.lightPosition[0], -this.lightPosition[1], -this.lightPosition[2]));
+    resultantMatrix = mult(
+      resultantMatrix,
+      translate(
+        -this.lightPosition[0],
+        -this.lightPosition[1],
+        -this.lightPosition[2]
+      )
+    );
     return resultantMatrix;
   }
 
-  linkShadowMatrix(resShadowMat){
-    this.gl.uniformMatrix4fv(this.uLoc.shadowMatrix, false, flatten(resShadowMat));
+  linkShadowMatrix(resShadowMat) {
+    this.gl.uniformMatrix4fv(
+      this.uLoc.shadowMatrix,
+      false,
+      flatten(resShadowMat)
+    );
   }
 
-  setShadowFlag(flag){
-    this.gl.uniform1f(
-      this.uLoc.drawingShadow,
-      flag
-    );
+  setShadowFlag(flag) {
+    this.gl.uniform1f(this.uLoc.drawingShadow, flag);
   }
 
   linkDrawingTexture() {

@@ -14,7 +14,7 @@
       attribute vec2 texCoord;
 
 
-      
+
 
       uniform vec4 lightPosition; //in world coordinates
 
@@ -34,7 +34,7 @@
       varying vec4 vSpecularColor;
 
       varying float vDrawingShadow;
-      
+
       varying float vLightingEnabled;
 
       varying vec2 vTexCoord;
@@ -55,7 +55,7 @@
           N = normalize(modelMatrix * vNormal).xyz;
           V = normalize(cameraPosition.xyz - pos); //vector to camera
 
-        
+
           gl_Position = projectionMatrix * cameraMatrix * modelMatrix * vPosition;
         }
 
@@ -75,19 +75,12 @@
       varying vec2 vTexCoord;
       uniform sampler2D texture;
 
-      uniform sampler2D cTex1;
-      uniform sampler2D cTex2;
-      uniform sampler2D cTex3;
-      uniform sampler2D cTex4;
-      uniform sampler2D cTex5;
-      uniform sampler2D cTex6;
-
-
       uniform float drawingTexture;
 
       void main() {
+
         vec4 fColor;
-        
+
         if(vDrawingShadow > .5){
           gl_FragColor = vec4(.1,.1,.1,1.0);
         }else{
@@ -107,9 +100,10 @@
 
           if(drawingTexture > .5){
         gl_FragColor = texture2D(texture, vTexCoord) * fColor;
+
         }
       }
-        
+
 
         //gl_FragColor = vec4(N,1.0);
       }
