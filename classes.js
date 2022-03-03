@@ -301,6 +301,12 @@ class Object3D {
   }
 }
 
+class BackgroundCube{
+  constructor(){
+  this.faces = []; //are object3D's
+  }
+}
+
 class ProgramContext {
   constructor() {
     this.canvas;

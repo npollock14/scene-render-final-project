@@ -13,9 +13,6 @@
       attribute vec4 specularColor;
       attribute vec2 texCoord;
 
-
-
-
       uniform vec4 lightPosition; //in world coordinates
 
       uniform mat4 modelMatrix;
@@ -23,8 +20,6 @@
       uniform mat4 cameraMatrix;
       uniform vec3 cameraPosition;
       uniform mat4 shadowMatrix;
-
-
 
       uniform float drawingShadow;
       uniform float lightingEnabled;
@@ -54,7 +49,6 @@
         if(drawingShadow > .5){
           gl_Position = projectionMatrix * cameraMatrix * shadowMatrix * modelMatrix * vPosition;
         }else{
-
           vec3 pos = (modelMatrix * vPosition).xyz; //to world coordinates
           L = normalize((lightPosition).xyz - pos);
           N = normalize(modelMatrix * vNormal).xyz;
@@ -79,11 +73,9 @@
       varying float vDrawingShadow;
       varying float vCurrObject;
 
-
       varying vec2 vTexCoord;
       uniform sampler2D texture;
       uniform samplerCube texMap;
-
 
       uniform float drawingTexture;
 
@@ -98,7 +90,6 @@
         }else{
           vec3 R = (2.0 * dot(L, N) * N) - L;
           vec4 diffuse = vDiffuseColor * max(dot(L, N), 0.0);
-          //vec4 diffuse = vDiffuseColor * dot(L, N);
 
           vec4 specular = vSpecularColor * pow(max(dot(V, R), 0.0), 20.0);
           vec4 ambient = .3 * vDiffuseColor;
