@@ -184,7 +184,6 @@ class Object3D {
     this.hasTexture = true;
     this.texture.image = image;
     this.texture.uv = uvs;
-    this.texture.textureNumber = context.activeTextures;
 
     gl.activeTexture(gl.TEXTURE0 + context.activeTextures);
     gl.bindTexture(gl.TEXTURE_2D, this.buffers.tex);
@@ -204,7 +203,6 @@ class Object3D {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
 
-    context.activeTextures++;
   }
 
   setBuffers(gl) {
@@ -258,12 +256,7 @@ class Object3D {
     if (this.hasTexture) {
       //push the texture to the shader
       // console.log("drawing texture" + this.texture.textureNumber);
-      gl.activeTexture(gl.TEXTURE0 + this.texture.textureNumber);
-      gl.bindTexture(gl.TEXTURE_2D, this.buffers.tex);
-      gl.uniform1i(
-        gl.getUniformLocation(context.program, "texture"),
-        this.textureNumber
-      );
+      
       //push the uv coordinates to the shader
 
       gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.uv);
@@ -322,7 +315,7 @@ class ProgramContext {
       n: null,
       diffuse: null,
       specular: null,
-      uv: null,
+      uvs: [],
     };
     //uniform locations
     this.uLoc = {
@@ -336,7 +329,7 @@ class ProgramContext {
       camPosition: null,
       shadowMatrix: null,
     };
-    this.activeTextures = 0;
+
     this.shaderFlags = {
       lightingEnabled: true,
       drawingTexture: false,
@@ -357,8 +350,15 @@ class ProgramContext {
     this.aLoc.n = gl.getAttribLocation(this.program, "vNormal");
     this.aLoc.diffuse = gl.getAttribLocation(this.program, "diffuseColor");
     this.aLoc.specular = gl.getAttribLocation(this.program, "specularColor");
-    this.aLoc.uv = gl.getAttribLocation(this.program, "texCoord");
+    this.aLoc.uvs.push(gl.getAttribLocation(this.program, "texCoord0"));
+    this.aLoc.uvs.push(gl.getAttribLocation(this.program, "texCoord1"));
+    this.aLoc.uvs.push(gl.getAttribLocation(this.program, "texCoord2"));
+    this.aLoc.uvs.push(gl.getAttribLocation(this.program, "texCoord3"));
+    this.aLoc.uvs.push(gl.getAttribLocation(this.program, "texCoord4"));
+    this.aLoc.uvs.push(gl.getAttribLocation(this.program, "texCoord5"));
+    this.aLoc.uvs.push(gl.getAttribLocation(this.program, "texCoord6"));  
   }
+  
   setUniformLocations() {
     this.uLoc.mm = this.gl.getUniformLocation(this.program, "modelMatrix");
     this.uLoc.pm = this.gl.getUniformLocation(this.program, "projectionMatrix");
