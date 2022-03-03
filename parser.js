@@ -21,6 +21,62 @@ let textureURL = null; // URL of texture file to use
 let diffuseMap = new Map();
 let specularMap = new Map();
 
+const cubeVerts = [
+  vec4( -0.5, -0.5,  0.5, 1.0 ),
+  vec4( -0.5,  0.5,  0.5, 1.0 ),
+  vec4( 0.5,  0.5,  0.5, 1.0 ),
+  vec4( 0.5, -0.5,  0.5, 1.0 ),
+  vec4( -0.5, -0.5, -0.5, 1.0 ),
+  vec4( -0.5,  0.5, -0.5, 1.0 ),
+  vec4( 0.5,  0.5, -0.5, 1.0 ),
+  vec4( 0.5, -0.5, -0.5, 1.0 )
+];
+
+let minT = 0.0;
+let maxT = 1.0;
+
+let texCoord = [
+  vec2(minT, minT),
+  vec2(minT, maxT),
+  vec2(maxT, maxT),
+  vec2(maxT, minT)
+];
+
+function quad(a, b, c, d) {
+  faceVertices.push(vertices[a]);
+  faceUVs.push(texCoord[0]);
+
+  faceVertices.push(vertices[b]);
+  faceUVs.push(texCoord[1]);
+
+  faceVertices.push(vertices[c]);
+  faceUVs.push(texCoord[2]);
+
+  faceVertices.push(vertices[a]);
+  faceUVs.push(texCoord[0]);
+
+  faceVertices.push(vertices[c]);
+  faceUVs.push(texCoord[2]);
+
+  faceVertices.push(vertices[d]);
+  faceUVs.push(texCoord[3]);
+}
+
+
+
+
+
+
+function genCube()
+{
+ quad( 1, 0, 3, 2 );
+ quad( 2, 3, 7, 6 );
+ quad( 3, 0, 4, 7 );
+ quad( 6, 5, 1, 2 );
+ quad( 4, 5, 6, 7 );
+ quad( 5, 4, 0, 1 );
+}
+
 /**
  * Loads a text file into the local program from a URL.
  *

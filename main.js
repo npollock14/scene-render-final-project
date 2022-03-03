@@ -202,6 +202,18 @@ async function loadData() {
   context.stopSign.rotateY(-90);
   console.log("stop sign LOADED");
 
+  resetConstants();
+
+  //load the skybox
+  // genCube();
+  // let skybox = new Object3D(faceVertices, null, null, null);
+  // let skyTex = await getTextureFromURL("https://web.cs.wpi.edu/~jmcuneo/cs4731/project3_1/skybox_negx.png");
+  // skybox.addTexture(skyTex, faceUVs, context.gl, context.program);
+  // skybox.scale(10,10,10);
+  // context.skybox = skybox;
+
+  console.log("skybox loaded");
+
   console.log("DONE LOADING");
 
   context.bunny.setParent(context.car);

@@ -286,6 +286,8 @@ class ProgramContext {
     this.lamp;
     this.street;
 
+    this.skybox;
+
     this.carAnimationEnabled = true;
 
     this.projectionMatrix;
