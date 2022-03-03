@@ -14,6 +14,7 @@ const keyMap = {
   ".": moveLight.bind(null, 0, 0, -0.1),
   m: toggleCarAnimation,
   c: toggleCamera,
+  o: toggleShadows,
 };
 
 let mouseDown = false;
@@ -29,6 +30,12 @@ function handleKeyDown(e) {
   if (keyMap[e.key]) {
     keyMap[e.key]();
   }
+}
+
+function toggleShadows(){
+  console.log(context.shaderFlags.drawingShadow);
+  context.toggleShadows();
+  console.log(context.shaderFlags.drawingShadow);
 }
 
 //translate the camera

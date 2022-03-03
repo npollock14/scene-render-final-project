@@ -59,24 +59,22 @@ function main() {
 function render() {
   context.clearCanvas();
 
+  
+
+  //DRAW SCENE OBJECTS
+  if (context.carAnimationEnabled) {
+    context.carAnimator.rotateY(-0.5);
+  }
+
   if (context.cameras[context.activeCam].parent != null) {
     context.cameras[context.activeCam].setRelToObject(
       context.cameras[context.activeCam].parent
     );
     context.linkCameraMatrix();
   }
-
-  //DRAW SCENE OBJECTS
-  if (context.carAnimationEnabled) {
-    context.carAnimator.rotateY(-0.5);
-  }
+  
   //draw car
   context.car.draw(context.gl, context.aLoc, context.uLoc, context);
-  // console.log(context.car.getWorldPosition());
-  // let carPos = context.car.getWorldPosition();
-  // context.cameras[0].setPosition(carPos[0], carPos[1], carPos[2] + 0.5);
-  // let bunnyPos = context.bunny.getWorldPosition();
-  // context.cameras[0].setAt(bunnyPos[0], bunnyPos[1], bunnyPos[2]);
 
   //draw bunny
   context.bunny.draw(context.gl, context.aLoc, context.uLoc, context);
@@ -210,6 +208,7 @@ async function loadData() {
   let carAnimator = new Object3D();
   context.carAnimator = carAnimator;
   context.car.setParent(context.carAnimator);
+  context.car.drawShadows = true;
 
   context.cameras[1].setParent(context.bunny);
 
