@@ -47,7 +47,7 @@
           vSpecularColor = specularColor;
 
         if(drawingShadow > .5){
-          gl_Position = projectionMatrix * cameraMatrix * shadowMatrix * vPosition;
+          gl_Position = projectionMatrix * cameraMatrix * shadowMatrix * modelMatrix* vPosition;
         }else{
 
           vec3 pos = (modelMatrix * vPosition).xyz; //to world coordinates
@@ -80,7 +80,7 @@
         vec4 fColor;
         
         if(vDrawingShadow > .5){
-          gl_FragColor = vec4(1.0,0.0,0.0,1.0);
+          gl_FragColor = vec4(.1,.1,.1,1.0);
         }else{
           vec3 R = (2.0 * dot(L, N) * N) - L;
           vec4 diffuse = vDiffuseColor * max(dot(L, N), 0.0);
