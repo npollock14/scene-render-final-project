@@ -47,7 +47,7 @@
           vSpecularColor = specularColor;
 
         if(drawingShadow > .5){
-          gl_Position = projectionMatrix * cameraMatrix * shadowMatrix * modelMatrix* vPosition;
+          gl_Position = projectionMatrix * cameraMatrix * shadowMatrix * modelMatrix * vPosition;
         }else{
 
           vec3 pos = (modelMatrix * vPosition).xyz; //to world coordinates

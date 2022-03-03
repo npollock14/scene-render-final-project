@@ -226,8 +226,6 @@ class Object3D {
   draw(gl, aLocs, uLocs, context) {
     let resultantModelMatrix = this.getTransformMatrix();
 
-    
-
     gl.uniformMatrix4fv(uLocs.mm, false, flatten(resultantModelMatrix));
 
     gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.v);
@@ -258,20 +256,13 @@ class Object3D {
 
     context.linkDrawingTexture();
 
-    if(this.drawShadows){
-      context.shaderFlags.drawingShadow = true;
-    }else{
-      context.shaderFlags.drawingShadow = false;
-    }
-    context.linkShadowFlag();
-
-    if(context.shaderFlags.drawingShadow && this.drawShadows){
+    if(context.shaderFlags.drawingShadow && this.drawShadows && context.shaderFlags.lightingEnabled){
       context.setShadowFlag(1.0);
-      context.linkShadowMatrix(context.getShadowMatrix(resultantModelMatrix));
+      context.linkShadowMatrix(context.getShadowMatrix());
     gl.drawArrays(gl.TRIANGLES, 0, this.vertices.length);
     }
-    context.setShadowFlag(0.0);
 
+    context.setShadowFlag(0.0);
     gl.drawArrays(gl.TRIANGLES, 0, this.vertices.length);
 
    
@@ -406,33 +397,27 @@ class ProgramContext {
   }
 
   toggleShadows(){
-    console.log(this.shaderFlags.drawingShadow);
     this.shaderFlags.drawingShadow = !this.shaderFlags.drawingShadow;
-    console.log(this.shaderFlags.drawingShadow);
-    this.linkShadowFlag();
   }
 
-  getShadowMatrix(modelMatrix){
+  getShadowMatrix(){
     let resultantMatrix = translate(this.lightPosition[0], this.lightPosition[1], this.lightPosition[2]);
     resultantMatrix = mult(resultantMatrix, this.shadowMatrix);
     resultantMatrix = mult(resultantMatrix, translate(-this.lightPosition[0], -this.lightPosition[1], -this.lightPosition[2]));
     return resultantMatrix;
   }
+
   linkShadowMatrix(resShadowMat){
     this.gl.uniformMatrix4fv(this.uLoc.shadowMatrix, false, flatten(resShadowMat));
   }
-  linkShadowFlag(){
-    this.gl.uniform1f(
-      this.uLoc.drawingShadow,
-      this.shaderFlags.drawingShadow ? 1.0 : 0.0
-    );
-  }
+
   setShadowFlag(flag){
     this.gl.uniform1f(
       this.uLoc.drawingShadow,
       flag
     );
   }
+
   linkDrawingTexture() {
     this.gl.uniform1f(
       this.uLoc.drawingTexture,

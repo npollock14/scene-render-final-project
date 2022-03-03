@@ -33,11 +33,8 @@ function handleKeyDown(e) {
 }
 
 function toggleShadows(){
-  console.log(context.shaderFlags.drawingShadow);
   context.toggleShadows();
-  console.log(context.shaderFlags.drawingShadow);
 }
-
 //translate the camera
 
 function translateCamera(x, y, z) {

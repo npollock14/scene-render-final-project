@@ -209,6 +209,7 @@ async function loadData() {
   context.carAnimator = carAnimator;
   context.car.setParent(context.carAnimator);
   context.car.drawShadows = true;
+  context.stopSign.drawShadows = true;
 
   context.cameras[1].setParent(context.bunny);
 
