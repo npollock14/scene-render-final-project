@@ -39,27 +39,31 @@ let texCoord = [
   vec2(minT, minT),
   vec2(minT, maxT),
   vec2(maxT, maxT),
-  vec2(maxT, minT)
+  vec2(maxT, minT),
+
+
+
+
 ];
 
 function quad(a, b, c, d) {
-  faceVertices.push(cubeVerts[a]);
-  faceUVs.push(texCoord[0]);
+  faceVertices.push(cubeVerts[c]);
+  faceUVs.push(texCoord[2]);
 
   faceVertices.push(cubeVerts[b]);
   faceUVs.push(texCoord[1]);
 
+  faceVertices.push(cubeVerts[a]);
+  faceUVs.push(texCoord[0]);
+
+  faceVertices.push(cubeVerts[d]);
+  faceUVs.push(texCoord[3]);
+
   faceVertices.push(cubeVerts[c]);
   faceUVs.push(texCoord[2]);
 
   faceVertices.push(cubeVerts[a]);
   faceUVs.push(texCoord[0]);
-
-  faceVertices.push(cubeVerts[c]);
-  faceUVs.push(texCoord[2]);
-
-  faceVertices.push(cubeVerts[d]);
-  faceUVs.push(texCoord[3]);
 }
 
 /**

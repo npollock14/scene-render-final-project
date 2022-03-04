@@ -43,8 +43,8 @@ function main() {
 
   //enable depth testing and back-face culling
   context.gl.enable(context.gl.DEPTH_TEST);
-  // context.gl.enable(context.gl.CULL_FACE);
-  // context.gl.cullFace(context.gl.BACK);
+  context.gl.enable(context.gl.CULL_FACE);
+  context.gl.cullFace(context.gl.BACK);
 
   //link event handlers
   document.onkeydown = (e) => {
@@ -229,9 +229,9 @@ async function loadData() {
   resetConstants();
 
   //load the skybox
-  let tempImage = await getTextureFromURL("https://th.bing.com/th/id/OIP.s4mQpYnltxevrn9xUS-yoAAAAA?pid=ImgDet&rs=1");
+  let tempImage = await getTextureFromURL("https://th.bing.com/th/id/R.73f023f0c6b73fe37c5e7f0c7403aafa?rik=GQD8o22PBYB5Fg&riu=http%3a%2f%2fvector.me%2ffiles%2fimages%2f1%2f4%2f143347%2fdirection_suivre_4_clip_art.jpg&ehk=brIO7Z1o6nCQXV7THdU%2fUx5TovMhp2LElLguPoTPgi0%3d&risl=&pid=ImgRaw&r=0");
   
-  let cube = new BackgroundCube([tempImage, tempImage, tempImage, tempImage,negx,posz])
+  let cube = new BackgroundCube([tempImage, tempImage, tempImage, tempImage,tempImage,tempImage])
   //slot 1 = back
   //slot 2 = right
   //slot 3 = bottom
