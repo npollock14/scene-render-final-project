@@ -69,14 +69,14 @@ function render() {
   //here we rotate a empty object around the y axis
   //this empty object is the parent to the car
   if (context.carAnimator.animationEnabled) {
-    context.carAnimator.rotateY(-0.3);
+    context.carAnimator.rotateY(-0.5);
     context.carAnimator.frameCount++;
   }
 
   //here we rotate another empty object around the y axis
   //this empty object is the parent to the main camera to achieve the effect of a rotating camera
   if (context.cameraAnimator.animationEnabled) {
-    context.cameraAnimator.rotateY(-0.3);
+    context.cameraAnimator.rotateY(0.3);
     context.cameras[0].addVector(
       0,
       0.015 * Math.cos(context.cameraAnimator.frameCount / 70),
