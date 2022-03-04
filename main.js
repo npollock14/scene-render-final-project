@@ -33,7 +33,7 @@ function main() {
     100
   );
 
-  context.cameras.push(new Camera(0, 4, 10));
+  context.cameras.push(new Camera(0, 4, 30));
   context.cameras.push(new Camera(-1, 0.5, -1));
 
   context.linkProjectionMatrix();
@@ -231,7 +231,13 @@ async function loadData() {
   //load the skybox
   let tempImage = await getTextureFromURL("https://th.bing.com/th/id/OIP.s4mQpYnltxevrn9xUS-yoAAAAA?pid=ImgDet&rs=1");
   
-  let cube = new BackgroundCube([tempImage, tempImage, tempImage, tempImage, tempImage, tempImage])
+  let cube = new BackgroundCube([tempImage, tempImage, tempImage, tempImage,negx,posz])
+  //slot 1 = back
+  //slot 2 = right
+  //slot 3 = bottom
+  //slot 4 = top
+  //slot 5 = front
+  //slot 6 = left
     context.skybox = cube;
 
   resetConstants();

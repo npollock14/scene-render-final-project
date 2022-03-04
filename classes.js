@@ -343,7 +343,7 @@ face.addTexture(image, faceUVs, context.gl, context);
 console.log(faceUVs);
 face.initBuffers(context.gl,context);
 face.setBuffers(context.gl);
-face.scale(2,2,2);
+face.scale(100,100,100);
 console.log(face.objectNumber);
 return face;
 }
