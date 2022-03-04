@@ -170,7 +170,7 @@ class Object3D {
     this.setModelMatrix();
   }
 
-  initBuffers(gl,context) {
+  initBuffers(gl, context) {
     this.buffers.v = gl.createBuffer();
     this.buffers.n = gl.createBuffer();
     this.buffers.diffuse = gl.createBuffer();
@@ -294,58 +294,72 @@ class Object3D {
   }
 }
 
-class BackgroundCube  {
-  constructor(images){
-  this.faces = [];
+class BackgroundCube {
+  constructor(images) {
+    this.faces = [];
 
-  resetConstants(); 
-quad( 1, 0, 3, 2 );
-this.faces.push(makeFace(images[0]));
+    //slot 1 = front
+    //slot 2 = left
+    //slot 3 = top
+    //slot 4 = bottom
+    //slot 5 = back
+    //slot 6 = right
 
-resetConstants();
- quad( 2, 3, 7, 6 );
-this.faces.push(makeFace(images[1]));
+    resetConstants();
+    quad(1, 0, 3, 2);
+    // quad(0, 1, 3, 2);
+    let face = makeFace(images[0]);
+    face.rotateZ(180);
+    this.faces.push(face);
 
+    resetConstants();
+    quad(2, 3, 7, 6);
+    face = makeFace(images[1]);
+    face.rotateX(180);
+    this.faces.push(face);
 
-resetConstants();
- quad( 3, 0, 4, 7 );
-this.faces.push(makeFace(images[2]));
+    resetConstants();
+    quad(3, 0, 4, 7);
+    face = makeFace(images[2]);
+    face.rotateY(90);
+    this.faces.push(face);
 
+    resetConstants();
+    quad(6, 5, 1, 2);
+    face = makeFace(images[3]);
+    face.rotateY(270);
+    this.faces.push(face);
 
- resetConstants();
- quad( 6, 5, 1, 2 );
-this.faces.push(makeFace(images[3]));
+    resetConstants();
+    quad(5, 6, 7, 4);
+    face = makeFace(images[4]);
+    face.rotateZ(90);
+    this.faces.push(face);
 
+    resetConstants();
+    quad(5, 4, 0, 1);
+    face = makeFace(images[5]);
+    face.rotateX(180);
+    this.faces.push(face);
 
- resetConstants();
- quad( 4, 5, 6, 7 );
-this.faces.push(makeFace(images[4]));
-
-
- resetConstants();
- quad( 5, 4, 0, 1 );
-this.faces.push(makeFace(images[5]));
-
-
- resetConstants();
+    resetConstants();
   }
 
-  draw(){
-    this.faces.forEach(face => {
+  draw() {
+    this.faces.forEach((face) => {
       face.draw(context.gl, context.aLoc, context.uLoc, context);
     });
   }
-
 }
-function makeFace(image){
-let face = new Object3D(faceVertices,null,null,null);
-face.addTexture(image, faceUVs, context.gl, context);
-console.log(faceUVs);
-face.initBuffers(context.gl,context);
-face.setBuffers(context.gl);
-face.scale(100,100,100);
-console.log(face.objectNumber);
-return face;
+function makeFace(image) {
+  let face = new Object3D(faceVertices, null, null, null);
+  face.addTexture(image, faceUVs, context.gl, context);
+  console.log(faceUVs);
+  face.initBuffers(context.gl, context);
+  face.setBuffers(context.gl);
+  face.scale(-75, -75, -75);
+  console.log(face.objectNumber);
+  return face;
 }
 
 class ProgramContext {
@@ -365,7 +379,6 @@ class ProgramContext {
     this.stopSign;
     this.stopSign2;
     this.stopSign3;
-
 
     this.skybox;
 
@@ -414,14 +427,11 @@ class ProgramContext {
     this.totalObjects = 0;
   }
 
-  setCurrObjectFlag(){
-    this.gl.uniform1f(
-      this.uLoc.currObject,
-      this.shaderFlags.currObject
-    );
+  setCurrObjectFlag() {
+    this.gl.uniform1f(this.uLoc.currObject, this.shaderFlags.currObject);
   }
 
-  setCubeMap(images){
+  setCubeMap(images) {
     let gl = this.gl;
     let program = this.program;
     this.cubeMap = gl.createTexture();
@@ -434,12 +444,54 @@ class ProgramContext {
     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
 
-    gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, images[0]);
-    gl.texImage2D(gl.TEXTURE_CUBE_MAP_NEGATIVE_X, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, images[1]);
-    gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_Y, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, images[2]);
-    gl.texImage2D(gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, images[3]);
-    gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_Z, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, images[4]);
-    gl.texImage2D(gl.TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, images[5]);
+    gl.texImage2D(
+      gl.TEXTURE_CUBE_MAP_POSITIVE_X,
+      0,
+      gl.RGB,
+      gl.RGB,
+      gl.UNSIGNED_BYTE,
+      images[0]
+    );
+    gl.texImage2D(
+      gl.TEXTURE_CUBE_MAP_NEGATIVE_X,
+      0,
+      gl.RGB,
+      gl.RGB,
+      gl.UNSIGNED_BYTE,
+      images[1]
+    );
+    gl.texImage2D(
+      gl.TEXTURE_CUBE_MAP_POSITIVE_Y,
+      0,
+      gl.RGB,
+      gl.RGB,
+      gl.UNSIGNED_BYTE,
+      images[2]
+    );
+    gl.texImage2D(
+      gl.TEXTURE_CUBE_MAP_NEGATIVE_Y,
+      0,
+      gl.RGB,
+      gl.RGB,
+      gl.UNSIGNED_BYTE,
+      images[3]
+    );
+    gl.texImage2D(
+      gl.TEXTURE_CUBE_MAP_POSITIVE_Z,
+      0,
+      gl.RGB,
+      gl.RGB,
+      gl.UNSIGNED_BYTE,
+      images[4]
+    );
+    gl.texImage2D(
+      gl.TEXTURE_CUBE_MAP_NEGATIVE_Z,
+      0,
+      gl.RGB,
+      gl.RGB,
+      gl.UNSIGNED_BYTE,
+      images[5]
+    );
 
     gl.uniform1i(gl.getUniformLocation(program, "texMap"), 31);
   }
@@ -459,8 +511,14 @@ class ProgramContext {
     this.uLoc.mm = this.gl.getUniformLocation(this.program, "modelMatrix");
     this.uLoc.pm = this.gl.getUniformLocation(this.program, "projectionMatrix");
     this.uLoc.cm = this.gl.getUniformLocation(this.program, "cameraMatrix");
-    this.uLoc.refractionsEnabled = this.gl.getUniformLocation(this.program, "refractionsEnabled");
-    this.uLoc.reflectionsEnabled = this.gl.getUniformLocation(this.program, "reflectionsEnabled");
+    this.uLoc.refractionsEnabled = this.gl.getUniformLocation(
+      this.program,
+      "refractionsEnabled"
+    );
+    this.uLoc.reflectionsEnabled = this.gl.getUniformLocation(
+      this.program,
+      "reflectionsEnabled"
+    );
 
     this.uLoc.currObject = this.gl.getUniformLocation(
       this.program,
@@ -528,14 +586,14 @@ class ProgramContext {
     );
   }
 
-  linkReflectionToggle(){
+  linkReflectionToggle() {
     this.gl.uniform1f(
       this.uLoc.reflectionsEnabled,
       this.shaderFlags.reflectionsEnabled ? 1.0 : 0.0
     );
   }
 
-  linkRefractionToggle(){
+  linkRefractionToggle() {
     this.gl.uniform1f(
       this.uLoc.refractionsEnabled,
       this.shaderFlags.refractionsEnabled ? 1.0 : 0.0

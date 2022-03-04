@@ -22,48 +22,48 @@ let diffuseMap = new Map();
 let specularMap = new Map();
 
 const cubeVerts = [
-  vec4( -0.5, -0.5,  0.5, 1.0 ),
-  vec4( -0.5,  0.5,  0.5, 1.0 ),
-  vec4( 0.5,  0.5,  0.5, 1.0 ),
-  vec4( 0.5, -0.5,  0.5, 1.0 ),
-  vec4( -0.5, -0.5, -0.5, 1.0 ),
-  vec4( -0.5,  0.5, -0.5, 1.0 ),
-  vec4( 0.5,  0.5, -0.5, 1.0 ),
-  vec4( 0.5, -0.5, -0.5, 1.0 )
+  vec4(-0.5, -0.5, 0.5, 1.0), //back bottom left
+  vec4(-0.5, 0.5, 0.5, 1.0), //back top left
+  vec4(0.5, 0.5, 0.5, 1.0), //back top right
+  vec4(0.5, -0.5, 0.5, 1.0), //back bottom right
+  vec4(-0.5, -0.5, -0.5, 1.0), //front bottom left
+  vec4(-0.5, 0.5, -0.5, 1.0), //front top left
+  vec4(0.5, 0.5, -0.5, 1.0), //front top right
+  vec4(0.5, -0.5, -0.5, 1.0), //front bottom right
 ];
 
 let minT = 0.0;
 let maxT = 1.0;
 
 let texCoord = [
-  vec2(minT, minT),
-  vec2(minT, maxT),
-  vec2(maxT, maxT),
-  vec2(maxT, minT),
-
-
-
-
+  vec2(minT, minT), //0 bottom left
+  vec2(minT, maxT), //1 top left
+  vec2(maxT, maxT), //2 top right
+  vec2(maxT, minT), //3 bottom right
 ];
 
+// function frontFace() {
+//   quad(5, 6, 7, 4);
+// }
+
 function quad(a, b, c, d) {
-  faceVertices.push(cubeVerts[c]);
-  faceUVs.push(texCoord[2]);
+  faceVertices.push(cubeVerts[a]);
+  faceUVs.push(texCoord[0]);
 
   faceVertices.push(cubeVerts[b]);
   faceUVs.push(texCoord[1]);
 
-  faceVertices.push(cubeVerts[a]);
-  faceUVs.push(texCoord[0]);
-
-  faceVertices.push(cubeVerts[d]);
-  faceUVs.push(texCoord[3]);
-
   faceVertices.push(cubeVerts[c]);
   faceUVs.push(texCoord[2]);
 
   faceVertices.push(cubeVerts[a]);
   faceUVs.push(texCoord[0]);
+
+  faceVertices.push(cubeVerts[c]);
+  faceUVs.push(texCoord[2]);
+
+  faceVertices.push(cubeVerts[d]);
+  faceUVs.push(texCoord[3]);
 }
 
 /**
