@@ -1,3 +1,4 @@
+//camera class that stores related attributes
 class Camera {
   constructor(x = 1, y = 4, z = 8) {
     this.initPos = [x, y, z];
@@ -6,10 +7,13 @@ class Camera {
     this.up = [0, 1, 0];
     this.rotation = 0;
 
+    //if the camera has a parent object, it is stored here
     this.parent = null;
 
     this.matrixRel = lookAt(this.eyeRel, this.at, this.up);
   }
+
+  //gets the camera's transformation matrix (relative to the parent)
   getTransformMatrix() {
     if (this.parent != null) {
       return mult(this.parent.getTransformMatrix(), this.matrixRel);
@@ -17,17 +21,24 @@ class Camera {
       return this.matrixRel;
     }
   }
+
+  //gets the camera's parent position in world space
   getWorldPosition() {
     let resPos = mult(this.getTransformMatrix(), vec4(0, 0, 0, 1));
     return [resPos[0], resPos[1], resPos[2]];
   }
+
+  //resets the camera position to the initial set position
   resetCameraPos() {
     this.eyeRel = this.initPos;
   }
+
+  //sets the camera's parent to the given object
   setParent(object) {
     this.parent = object;
   }
 
+  //gets where the camera is actually positioned in world space
   getActualEye() {
     if (this.parent != null) {
       let eyePos = mult(
@@ -40,6 +51,7 @@ class Camera {
     }
   }
 
+  //sets the camera's position relative to the parent
   setRelToObject(object) {
     let worldPos = object.getWorldPosition();
 
@@ -48,21 +60,27 @@ class Camera {
     this.matrixRel = lookAt(this.getActualEye(), this.at, this.up);
   }
 
+  //sets the camera's relative position
   setPosition(x, y, z) {
     this.eyeRel = [x, y, z];
     this.matrixRel = lookAt(this.eyeRel, this.at, this.up);
   }
+
+  // adds a vector to the camera's relative position
   addVector(x, y, z) {
     this.eyeRel[0] += x;
     this.eyeRel[1] += y;
     this.eyeRel[2] += z;
     this.matrixRel = lookAt(this.eyeRel, this.at, this.up);
   }
+
+  //sets the cameras at vector
   setAt(x, y, z) {
     this.at = [x, y, z];
     this.matrixRel = lookAt(this.eyeRel, this.at, this.up);
   }
 
+  //logs camera data
   log() {
     console.log("Camera:");
     console.log("eye: " + this.eyeRel);
@@ -71,6 +89,7 @@ class Camera {
   }
 }
 
+//object class that stores object variables and useful methods
 class Object3D {
   constructor(vertices, normals, diffuse, specular) {
     this.vertices = vertices;
@@ -83,6 +102,8 @@ class Object3D {
     this.translateMatrix = mat4();
     this.position = [0, 0, 0];
     this.rotateMatrix = mat4();
+
+    //stores a list of the buffers that each object needs
     this.buffers = {
       v: null,
       n: null,
@@ -97,34 +118,41 @@ class Object3D {
 
     this.hasTexture = false;
 
+    //if there is a texture, the texture info is stored here
     this.texture = {
       image: null,
       uv: [],
       textureNumber: null,
     };
+
+    //if animation, the animation info is stored here
     this.frameCount = 0;
     this.animationEnabled = false;
-    this.worldPosition = null;
 
+    this.worldPosition = null;
     this.drawShadows = false;
     this.objectNumber = null;
   }
 
+  //gets the transformation matrix of the object relative to its parent
   getTransformMatrix() {
     if (this.parent == null) return this.modelMatrix;
     return mult(this.parent.getTransformMatrix(), this.modelMatrix);
   }
 
+  //gets the world position of the object
   getWorldPosition() {
     let transMatrix = this.getTransformMatrix();
     let worldPos = mult(transMatrix, vec4(0, 0, 0, 1));
     return [worldPos[0], worldPos[1], worldPos[2]];
   }
 
+  //sets the object to be relative to the given object
   setParent(parentObject) {
     this.parent = parentObject;
   }
 
+  //sets the object's model matrix based on its translate rotation and scale matrices
   setModelMatrix() {
     this.modelMatrix = mult(
       this.translateMatrix,
@@ -132,14 +160,19 @@ class Object3D {
     );
   }
 
+  //scales the object by the given vector
   scale(x, y, z) {
     this.scaleMatrix = mult(this.scaleMatrix, scalem(x, y, z));
     this.setModelMatrix();
   }
+
+  //sets the objects scale to the given vector
   setScale(x, y, z) {
     this.scaleMatrix = scalem(x, y, z);
     this.setModelMatrix();
   }
+
+  //moves the object by the given vector
   move(x, y, z) {
     this.translateMatrix = mult(this.translateMatrix, translate(x, y, z));
     this.position = [
@@ -149,33 +182,46 @@ class Object3D {
     ];
     this.setModelMatrix();
   }
+
+  //sets the objects position to the given vector
   setPosition(x, y, z) {
     this.translateMatrix = translate(x, y, z);
     this.position = [x, y, z];
     this.setModelMatrix();
   }
+
+  //rotates the object by the given angle
   rotateX(angle) {
     this.rotateMatrix = mult(this.rotateMatrix, rotateX(angle));
     this.setModelMatrix();
   }
+
+  //rotates the object by the given angle
   rotateY(angle) {
     this.rotateMatrix = mult(this.rotateMatrix, rotateY(angle));
     this.setModelMatrix();
   }
+
+  //rotates the object by the given angle
   rotateZ(angle) {
     this.rotateMatrix = mult(this.rotateMatrix, rotateZ(angle));
     this.setModelMatrix();
   }
+
+  //resets the objects rotation
   resetRotation() {
     this.rotateMatrix = mat4();
     this.setModelMatrix();
   }
 
+  //initializes the buffers for the object
   initBuffers(gl, context) {
     this.buffers.v = gl.createBuffer();
     this.buffers.n = gl.createBuffer();
     this.buffers.diffuse = gl.createBuffer();
     this.buffers.specular = gl.createBuffer();
+
+    //if there is a texture for the object, create the texture buffer
     if (this.hasTexture) {
       this.buffers.uv = gl.createBuffer();
     }
@@ -183,6 +229,7 @@ class Object3D {
     context.totalObjects++;
   }
 
+  //adds a texture to the object including uvs
   addTexture(image, uvs, gl, context) {
     this.buffers.tex = gl.createTexture();
     this.hasTexture = true;
@@ -212,6 +259,7 @@ class Object3D {
     context.activeTextures++;
   }
 
+  //pushes data to the objects buffers
   setBuffers(gl) {
     if (this.vertices) {
       gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.v);
@@ -238,12 +286,14 @@ class Object3D {
     }
   }
 
-  //MAIN-DRAW
+  //main draw method for the object
   draw(gl, aLocs, uLocs, context) {
+    //gets the transformation matrix of the object relative to its parent
     let resultantModelMatrix = this.getTransformMatrix();
 
     gl.uniformMatrix4fv(uLocs.mm, false, flatten(resultantModelMatrix));
 
+    //bind buffers
     gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.v);
     gl.vertexAttribPointer(aLocs.v, 4, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(aLocs.v);
@@ -264,6 +314,7 @@ class Object3D {
     context.shaderFlags.currObject = this.objectNumber;
     context.setCurrObjectFlag();
 
+    //if there is a texture, bind it
     if (this.hasTexture) {
       gl.bindTexture(gl.TEXTURE_2D, this.buffers.tex);
 
@@ -271,13 +322,16 @@ class Object3D {
       gl.enableVertexAttribArray(aLocs.uv);
       gl.vertexAttribPointer(aLocs.uv, 2, gl.FLOAT, false, 0, 0);
 
+      //set the current texture flag
       context.shaderFlags.drawingTexture = true;
     } else {
       context.shaderFlags.drawingTexture = false;
     }
 
+    //link the shader flags to the shader
     context.linkDrawingTexture();
 
+    //handle shadows
     if (
       context.shaderFlags.drawingShadow &&
       this.drawShadows &&
@@ -411,6 +465,8 @@ class ProgramContext {
       refractionsEnabled: null,
     };
     this.activeTextures = 0;
+
+    //shader flags
     this.shaderFlags = {
       lightingEnabled: true,
       drawingTexture: false,
@@ -562,6 +618,8 @@ class ProgramContext {
     //give drawingTexture a default value of 0.0
     this.gl.uniform1f(this.uLoc.drawingTexture, 1.0);
   }
+
+  //links the projection matrix to the shader
   linkProjectionMatrix() {
     this.gl.uniformMatrix4fv(
       this.uLoc.pm,
@@ -570,11 +628,14 @@ class ProgramContext {
     );
   }
 
+  //linkes the light position to the shader
   linkLightPosition() {
     this.gl.uniform4fv(this.uLoc.lightPosition, flatten(this.lightPosition));
     //update the shadow matrix
     this.shadowMatrix[3][1] = -1 / this.lightPosition[1];
   }
+
+  //links the camera matrix to the shader
   linkCameraMatrix() {
     let activeCam = this.cameras[this.activeCam];
 
@@ -584,10 +645,14 @@ class ProgramContext {
       flatten(activeCam.getActualEye())
     );
   }
+
+  //toggles and links lighting to the shader
   toggleLighting() {
     this.shaderFlags.lightingEnabled = !this.shaderFlags.lightingEnabled;
     this.linkLightingToggle();
   }
+
+  //links the lighting toggle to the shader
   linkLightingToggle() {
     this.gl.uniform1f(
       this.uLoc.lightingEnabled,
@@ -595,6 +660,7 @@ class ProgramContext {
     );
   }
 
+  //links the reflection toggle to the shader
   linkReflectionToggle() {
     this.gl.uniform1f(
       this.uLoc.reflectionsEnabled,
@@ -602,6 +668,7 @@ class ProgramContext {
     );
   }
 
+  //links refraction toggle to the shader
   linkRefractionToggle() {
     this.gl.uniform1f(
       this.uLoc.refractionsEnabled,
@@ -609,10 +676,12 @@ class ProgramContext {
     );
   }
 
+  //toggles shadow flag
   toggleShadows() {
     this.shaderFlags.drawingShadow = !this.shaderFlags.drawingShadow;
   }
 
+  //gets the shadow matrix as shown in class
   getShadowMatrix() {
     let resultantMatrix = translate(
       this.lightPosition[0],
@@ -631,6 +700,7 @@ class ProgramContext {
     return resultantMatrix;
   }
 
+  //links the shadow matrix to the shader
   linkShadowMatrix(resShadowMat) {
     this.gl.uniformMatrix4fv(
       this.uLoc.shadowMatrix,
@@ -639,10 +709,12 @@ class ProgramContext {
     );
   }
 
+  //links the shadow flag to the shader
   setShadowFlag(flag) {
     this.gl.uniform1f(this.uLoc.drawingShadow, flag);
   }
 
+  //links the drawing texture flag to the shader
   linkDrawingTexture() {
     this.gl.uniform1f(
       this.uLoc.drawingTexture,
@@ -650,6 +722,7 @@ class ProgramContext {
     );
   }
 
+  //sets and links the light position to the shader
   setLightPosition(x, y, z) {
     this.lightPosition = vec4(x, y, z, 1);
     this.linkLightPosition();
