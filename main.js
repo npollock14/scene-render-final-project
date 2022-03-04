@@ -1,3 +1,8 @@
+/*
+EXTRA CREDIT:
+- arrow keys and "," and "." can control the position of the light
+*/
+
 const context = new ProgramContext();
 
 function main() {

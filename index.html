@@ -131,11 +131,33 @@
     <script type="text/javascript" src="eventHandlers.js"></script>
   </head>
 
-  <body onload="main()">
-    <h1 id="mode">CS 4731 Final Project</h1>
+  <body style="background-color:lightblue" onload="main()">
+    <div style="display: flex; flex-direction: column; align-items: center;">
+    <h1 id="mode" >CS 4731 Final Project</h1>
+    <h3>by: Nathan Pollock</h3>
 
     <canvas id="webgl" class="box" width="1600" height="900">
       Please use a browser that supports the "canvas" tag.
     </canvas>
+  </div>
+
+    <h3>Controls:</h3>
+    <ul>
+      <li>'l': toggle the light</li>
+      <li>'c': toggle main camera motion</li>
+      <li>'m': toggle the motion of the car</li>
+      <li>'d': toggle between the main and hood cameras</li>
+      <li>'s': toggle shadows</li>
+      <li>'e': toggle skybox</li>
+      <li>'r': toggle reflections on the car</li>
+      <li>'f': toggle refractions on the bunny</li>
+      <li>Arrow Key UP: raise the light source</li>
+      <li>Arrow Key DOWN: lower the light source</li>
+      <li>Arrow Key LEFT: move the light source in -x</li>
+      <li>Arrow Key RIGHT: move the light source in +x</li>
+      <li>',': move the light source in +z</li>
+      <li>'.': move the light source in -z</li>
+    </ul>
+    
   </body>
 </html>
