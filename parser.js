@@ -43,38 +43,23 @@ let texCoord = [
 ];
 
 function quad(a, b, c, d) {
-  faceVertices.push(vertices[a]);
+  faceVertices.push(cubeVerts[a]);
   faceUVs.push(texCoord[0]);
 
-  faceVertices.push(vertices[b]);
+  faceVertices.push(cubeVerts[b]);
   faceUVs.push(texCoord[1]);
 
-  faceVertices.push(vertices[c]);
+  faceVertices.push(cubeVerts[c]);
   faceUVs.push(texCoord[2]);
 
-  faceVertices.push(vertices[a]);
+  faceVertices.push(cubeVerts[a]);
   faceUVs.push(texCoord[0]);
 
-  faceVertices.push(vertices[c]);
+  faceVertices.push(cubeVerts[c]);
   faceUVs.push(texCoord[2]);
 
-  faceVertices.push(vertices[d]);
+  faceVertices.push(cubeVerts[d]);
   faceUVs.push(texCoord[3]);
-}
-
-
-
-
-
-
-function genCube()
-{
- quad( 1, 0, 3, 2 );
- quad( 2, 3, 7, 6 );
- quad( 3, 0, 4, 7 );
- quad( 6, 5, 1, 2 );
- quad( 4, 5, 6, 7 );
- quad( 5, 4, 0, 1 );
 }
 
 /**

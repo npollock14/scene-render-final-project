@@ -102,13 +102,17 @@
             vec4 texColor = textureCube(texMap, vReflections);
             fColor = texColor + fColor;
           }
+          
       
           fColor.a = 1.0;
           gl_FragColor = fColor;
 
-          if(drawingTexture > .5){
+          if(drawingTexture > .5 ){
+            if(vCurrObject > 4.5){
+        gl_FragColor = texture2D(texture, vTexCoord);
+            }else{
         gl_FragColor = texture2D(texture, vTexCoord) * fColor;
-
+            }
         }
       }
 

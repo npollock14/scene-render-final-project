@@ -43,8 +43,8 @@ function main() {
 
   //enable depth testing and back-face culling
   context.gl.enable(context.gl.DEPTH_TEST);
-  context.gl.enable(context.gl.CULL_FACE);
-  context.gl.cullFace(context.gl.BACK);
+  // context.gl.enable(context.gl.CULL_FACE);
+  // context.gl.cullFace(context.gl.BACK);
 
   //link event handlers
   document.onkeydown = (e) => {
@@ -86,8 +86,9 @@ function render() {
   // //draw stop sign
   context.stopSign.draw(context.gl, context.aLoc, context.uLoc, context);
 
+
   //draw the skybox
-  // context.skybox.draw(context.gl, context.aLoc, context.uLoc, context);
+  context.skybox.draw();
 
   requestAnimationFrame(render);
 }
@@ -201,7 +202,6 @@ async function loadData() {
     textureImage,
     faceUVs,
     context.gl,
-    context.program,
     context
   );
   stopSign.initBuffers(context.gl,context);
@@ -209,36 +209,30 @@ async function loadData() {
   context.stopSign = stopSign;
   context.stopSign.move(4.5, 0, -2);
   context.stopSign.rotateY(-90);
-  console.log("stop sign LOADED");
+  console.log("stop sign LOADED");  
 
   let cubeMapImages = [];
-  let image = await getTextureFromURL("https://web.cs.wpi.edu/~jmcuneo/cs4731/project3_1/skybox_posx.png");
-  cubeMapImages.push(image);
-  image = await getTextureFromURL("https://web.cs.wpi.edu/~jmcuneo/cs4731/project3_1/skybox_negx.png");
-  cubeMapImages.push(image);
-  image = await getTextureFromURL("https://web.cs.wpi.edu/~jmcuneo/cs4731/project3_1/skybox_posy.png");
-  cubeMapImages.push(image);
-  image = await getTextureFromURL("https://web.cs.wpi.edu/~jmcuneo/cs4731/project3_1/skybox_negy.png");
-  cubeMapImages.push(image);
-  image = await getTextureFromURL("https://web.cs.wpi.edu/~jmcuneo/cs4731/project3_1/skybox_posz.png");
-  cubeMapImages.push(image);
-  image = await getTextureFromURL("https://web.cs.wpi.edu/~jmcuneo/cs4731/project3_1/skybox_negz.png");
-  cubeMapImages.push(image);
+  let posx = await getTextureFromURL("https://web.cs.wpi.edu/~jmcuneo/cs4731/project3_1/skybox_posx.png");
+  cubeMapImages.push(posx);
+  let negx = await getTextureFromURL("https://web.cs.wpi.edu/~jmcuneo/cs4731/project3_1/skybox_negx.png");
+  cubeMapImages.push(negx);
+  let posy = await getTextureFromURL("https://web.cs.wpi.edu/~jmcuneo/cs4731/project3_1/skybox_posy.png");
+  cubeMapImages.push(posy);
+  let negy = await getTextureFromURL("https://web.cs.wpi.edu/~jmcuneo/cs4731/project3_1/skybox_negy.png");
+  cubeMapImages.push(negy);
+  let posz = await getTextureFromURL("https://web.cs.wpi.edu/~jmcuneo/cs4731/project3_1/skybox_posz.png");
+  cubeMapImages.push(posz);
+  let negz = await getTextureFromURL("https://web.cs.wpi.edu/~jmcuneo/cs4731/project3_1/skybox_negz.png");
+  cubeMapImages.push(negz);
   context.setCubeMap(cubeMapImages);
 
-  //load the skybox
-  // genCube();
-  // let skybox = new Object3D(faceVertices, null, null, null);
-  // let skyTex = await getTextureFromURL(
-  //   "https://web.cs.wpi.edu/~jmcuneo/cs4731/project3_1/skybox_negx.png"
-  // );
-  // skybox.addTexture(skyTex, faceUVs, context.gl, context.program, context);
-  // skybox.initBuffers(context.gl,context);
-  // skybox.setBuffers(context.gl);
-  // skybox.scale(10, 10, 10);
-  // context.skybox = skybox;
+  resetConstants();
 
-  // console.log("skybox loaded");
+  //load the skybox
+  let tempImage = await getTextureFromURL("https://th.bing.com/th/id/OIP.s4mQpYnltxevrn9xUS-yoAAAAA?pid=ImgDet&rs=1");
+  
+  let cube = new BackgroundCube([tempImage, tempImage, tempImage, tempImage, tempImage, tempImage])
+    context.skybox = cube;
 
   resetConstants();
 

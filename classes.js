@@ -182,14 +182,15 @@ class Object3D {
     context.totalObjects++;
   }
 
-  addTexture(image, uvs, gl, program, context) {
+  addTexture(image, uvs, gl, context) {
     this.buffers.tex = gl.createTexture();
     this.hasTexture = true;
     this.texture.image = image;
     this.texture.uv = uvs;
     this.texture.textureNumber = context.activeTextures;
 
-    gl.activeTexture(gl.TEXTURE0 + context.activeTextures);
+    gl.activeTexture(gl.TEXTURE0);
+
     gl.bindTexture(gl.TEXTURE_2D, this.buffers.tex);
 
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -263,15 +264,7 @@ class Object3D {
     context.setCurrObjectFlag();
 
     if (this.hasTexture) {
-      //push the texture to the shader
-      // console.log("drawing texture" + this.texture.textureNumber);
-      gl.activeTexture(gl.TEXTURE0 + this.texture.textureNumber);
       gl.bindTexture(gl.TEXTURE_2D, this.buffers.tex);
-      gl.uniform1i(
-        gl.getUniformLocation(context.program, "texture"),
-        this.textureNumber
-      );
-      //push the uv coordinates to the shader
 
       gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.uv);
       gl.enableVertexAttribArray(aLocs.uv);
@@ -301,10 +294,58 @@ class Object3D {
   }
 }
 
-class BackgroundCube{
-  constructor(){
-  this.faces = []; //are object3D's
+class BackgroundCube  {
+  constructor(images){
+  this.faces = [];
+
+  resetConstants(); 
+quad( 1, 0, 3, 2 );
+this.faces.push(makeFace(images[0]));
+
+resetConstants();
+ quad( 2, 3, 7, 6 );
+this.faces.push(makeFace(images[1]));
+
+
+resetConstants();
+ quad( 3, 0, 4, 7 );
+this.faces.push(makeFace(images[2]));
+
+
+ resetConstants();
+ quad( 6, 5, 1, 2 );
+this.faces.push(makeFace(images[3]));
+
+
+ resetConstants();
+ quad( 4, 5, 6, 7 );
+this.faces.push(makeFace(images[4]));
+
+
+ resetConstants();
+ quad( 5, 4, 0, 1 );
+this.faces.push(makeFace(images[5]));
+
+
+ resetConstants();
   }
+
+  draw(){
+    this.faces.forEach(face => {
+      face.draw(context.gl, context.aLoc, context.uLoc, context);
+    });
+  }
+
+}
+function makeFace(image){
+let face = new Object3D(faceVertices,null,null,null);
+face.addTexture(image, faceUVs, context.gl, context);
+console.log(faceUVs);
+face.initBuffers(context.gl,context);
+face.setBuffers(context.gl);
+face.scale(2,2,2);
+console.log(face.objectNumber);
+return face;
 }
 
 class ProgramContext {
@@ -321,6 +362,10 @@ class ProgramContext {
     this.bunny;
     this.lamp;
     this.street;
+    this.stopSign;
+    this.stopSign2;
+    this.stopSign3;
+
 
     this.skybox;
 
