@@ -103,6 +103,7 @@ class Object3D {
       textureNumber: null,
     };
     this.frameCount = 0;
+    this.animationEnabled = false;
     this.worldPosition = null;
 
     this.drawShadows = false;
@@ -289,11 +290,10 @@ class Object3D {
 
     context.setShadowFlag(0.0);
     gl.drawArrays(gl.TRIANGLES, 0, this.vertices.length);
-
-    this.frameCount++;
   }
 }
 
+//class for a cube with different textures on each face
 class BackgroundCube {
   constructor(images) {
     this.faces = [];
@@ -345,23 +345,25 @@ class BackgroundCube {
     resetConstants();
   }
 
+  //has its own draw function that just draws the faces
   draw() {
     this.faces.forEach((face) => {
       face.draw(context.gl, context.aLoc, context.uLoc, context);
     });
   }
 }
+
+//creates a face of a cube with the given image
 function makeFace(image) {
   let face = new Object3D(faceVertices, null, null, null);
   face.addTexture(image, faceUVs, context.gl, context);
-  console.log(faceUVs);
   face.initBuffers(context.gl, context);
   face.setBuffers(context.gl);
-  face.scale(-75, -75, -75);
-  console.log(face.objectNumber);
+  face.scale(-75, -75, -75); //negative to keep backface culling working
   return face;
 }
 
+//stores program variables to not have to use global variables
 class ProgramContext {
   constructor() {
     this.canvas;
@@ -377,12 +379,10 @@ class ProgramContext {
     this.lamp;
     this.street;
     this.stopSign;
-    this.stopSign2;
-    this.stopSign3;
+
+    this.cameraAnimator;
 
     this.skybox;
-
-    this.carAnimationEnabled = true;
 
     this.projectionMatrix;
     this.lightPosition = [0, 3, 0, 1];
@@ -418,6 +418,7 @@ class ProgramContext {
       currObject: null,
       reflectionsEnabled: false,
       refractionsEnabled: false,
+      skyboxEnabled: false,
     };
     this.shadowMatrix = mat4();
     this.shadowMatrix[3][3] = 0;
@@ -427,10 +428,12 @@ class ProgramContext {
     this.totalObjects = 0;
   }
 
+  //sets the flag for the current object
   setCurrObjectFlag() {
     this.gl.uniform1f(this.uLoc.currObject, this.shaderFlags.currObject);
   }
 
+  //sets the cube map up taking in the required images
   setCubeMap(images) {
     let gl = this.gl;
     let program = this.program;
@@ -493,12 +496,16 @@ class ProgramContext {
       images[5]
     );
 
+    //maps to slot 31 to not interfere with other textures
     gl.uniform1i(gl.getUniformLocation(program, "texMap"), 31);
   }
+
+  //clears the canvas
   clearCanvas() {
     let gl = this.gl;
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
   }
+  //sets up the locations for some of the shader attributes
   setAttributeLocations() {
     let gl = this.gl;
     this.aLoc.v = gl.getAttribLocation(this.program, "vPosition");
@@ -507,6 +514,8 @@ class ProgramContext {
     this.aLoc.specular = gl.getAttribLocation(this.program, "specularColor");
     this.aLoc.uv = gl.getAttribLocation(this.program, "texCoord");
   }
+
+  //sets up the locations for some of the shader uniforms
   setUniformLocations() {
     this.uLoc.mm = this.gl.getUniformLocation(this.program, "modelMatrix");
     this.uLoc.pm = this.gl.getUniformLocation(this.program, "projectionMatrix");

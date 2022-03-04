@@ -17,7 +17,7 @@ function main() {
   context.gl.viewport(0, 0, context.canvas.width, context.canvas.height);
 
   // Set clear color
-  context.gl.clearColor(1, 0.6, 1, 1.0);
+  context.gl.clearColor(0.0, 0.0, 0.0, 1.0);
 
   // Initialize shaders
   context.program = initShaders(context.gl, "vshader", "fshader");
@@ -60,8 +60,19 @@ function render() {
   context.clearCanvas();
 
   //DRAW SCENE OBJECTS
-  if (context.carAnimationEnabled) {
+  if (context.carAnimator.animationEnabled) {
     context.carAnimator.rotateY(-0.3);
+    context.carAnimator.frameCount++;
+  }
+
+  if (context.cameraAnimator.animationEnabled) {
+    context.cameraAnimator.rotateY(0.6);
+    context.cameras[0].addVector(
+      0,
+      0.02 * Math.cos(context.cameraAnimator.frameCount / 100),
+      0
+    );
+    context.cameraAnimator.frameCount++;
   }
 
   if (context.cameras[context.activeCam].parent != null) {
@@ -86,8 +97,10 @@ function render() {
   // //draw stop sign
   context.stopSign.draw(context.gl, context.aLoc, context.uLoc, context);
 
-  //draw the skybox
-  context.skybox.draw();
+  if (context.shaderFlags.skyboxEnabled) {
+    //draw the skybox
+    context.skybox.draw();
+  }
 
   requestAnimationFrame(render);
 }
@@ -252,12 +265,18 @@ async function loadData() {
 
   context.bunny.setParent(context.car);
   let carAnimator = new Object3D();
+  carAnimator.animationEnabled = true;
   context.carAnimator = carAnimator;
   context.car.setParent(context.carAnimator);
   context.car.drawShadows = true;
   context.stopSign.drawShadows = true;
 
   context.cameras[1].setParent(context.bunny);
+
+  let camera0Animator = new Object3D();
+  camera0Animator.animationEnabled = false;
+  context.cameraAnimator = camera0Animator;
+  context.cameras[0].setParent(context.cameraAnimator);
 
   render(context);
 }

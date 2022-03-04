@@ -1,8 +1,4 @@
 const keyMap = {
-  w: translateCamera.bind(null, 0, 0, -0.2),
-  s: translateCamera.bind(null, 0, 0, 0.2),
-  a: translateCamera.bind(null, -0.2, 0, 0),
-  d: translateCamera.bind(null, 0.2, 0, 0),
   " ": translateCamera.bind(null, 0, 0.2, 0),
   Control: translateCamera.bind(null, 0, -0.2, 0),
   l: toggleLight,
@@ -13,10 +9,12 @@ const keyMap = {
   ",": moveLight.bind(null, 0, 0, 0.1),
   ".": moveLight.bind(null, 0, 0, -0.1),
   m: toggleCarAnimation,
-  c: toggleCamera,
-  o: toggleShadows,
+  d: toggleCamera,
+  s: toggleShadows,
   r: toggleReflections,
-  f: toggleRefractions
+  f: toggleRefractions,
+  e: toggleSkybox,
+  c: toggleMainCameraAnimation,
 };
 
 let mouseDown = false;
@@ -24,16 +22,27 @@ let mouseDown = false;
 function toggleCamera() {
   context.activeCam = (context.activeCam + 1) % context.cameras.length;
   context.linkCameraMatrix();
-  console.log(context.activeCam);
 }
 
-function toggleRefractions(){
-  context.shaderFlags.refractionsEnabled = !context.shaderFlags.refractionsEnabled;
+function toggleMainCameraAnimation() {
+  context.cameraAnimator.animationEnabled =
+    !context.cameraAnimator.animationEnabled;
+}
+
+function toggleSkybox() {
+  context.shaderFlags.skyboxEnabled = !context.shaderFlags.skyboxEnabled;
+  context.linkSkyboxToggle();
+}
+
+function toggleRefractions() {
+  context.shaderFlags.refractionsEnabled =
+    !context.shaderFlags.refractionsEnabled;
   context.linkRefractionToggle();
 }
 
-function toggleReflections(){
-  context.shaderFlags.reflectionsEnabled = !context.shaderFlags.reflectionsEnabled;
+function toggleReflections() {
+  context.shaderFlags.reflectionsEnabled =
+    !context.shaderFlags.reflectionsEnabled;
   context.linkReflectionToggle();
 }
 
@@ -44,7 +53,7 @@ function handleKeyDown(e) {
   }
 }
 
-function toggleShadows(){
+function toggleShadows() {
   context.toggleShadows();
 }
 //translate the camera
@@ -65,5 +74,5 @@ function moveLight(x, y, z) {
   context.linkLightPosition();
 }
 function toggleCarAnimation() {
-  context.carAnimationEnabled = !context.carAnimationEnabled;
+  context.carAnimator.animationEnabled = !context.carAnimator.animationEnabled;
 }
